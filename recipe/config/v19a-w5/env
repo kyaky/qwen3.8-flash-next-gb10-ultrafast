@@ -34,7 +34,7 @@ QSA_DET_LIB=''
 LOAD_CLONE='1'
 MOE_NAME_INDEX='1'
 EMBED_CHUNK='1'
-CACHE_MOUNT='$GB10_WORKSPACE/envs/compile-cache'
+CACHE_MOUNT='$HOME/.cache/qwen38-compile'
 
 # P2 stage-1c G2 harness: the ARMED wiring drives per-step K through
 # SchedulerOutput.num_spec_tokens_to_schedule; FORCE=oscillate replaces the

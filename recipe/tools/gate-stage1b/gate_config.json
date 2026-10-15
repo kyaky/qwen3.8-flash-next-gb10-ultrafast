@@ -2,10 +2,10 @@
  "base": "http://localhost:8000",
  "model": "qwen",
  "container": "qwen38-flash",
- "repo_root": "$GB10_REPO",
+ "repo_root": ".",
  "base_config_dir": "recipe/config/v18a-g2",
  "baseline_config_dir": "recipe/config/v17a-off",
- "scratch_parent": "$GB10_AGENT_DIR/runs",
+ "scratch_parent": "runs",
  "out_dir": null,
  "boot": {
   "launch_k": 4,

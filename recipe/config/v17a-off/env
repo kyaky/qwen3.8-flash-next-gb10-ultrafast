@@ -34,7 +34,7 @@ QSA_DET_LIB=''
 LOAD_CLONE='1'
 MOE_NAME_INDEX='1'
 EMBED_CHUNK='1'
-CACHE_MOUNT='$GB10_WORKSPACE/envs/compile-cache'
+CACHE_MOUNT='$HOME/.cache/qwen38-compile'
 MOE_ALIGN_STABLESORT='1'
 
 # R-034: the R-028-proven determinism fix folded back into the

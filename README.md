@@ -100,7 +100,7 @@ Download the pinned public checkpoint and PLE table, build the image and the T80
 ```bash
 # Clone and install the Hugging Face CLI
 git clone https://github.com/kyaky/qwen3.8-flash-next-gb10-ultrafast.git
-cd qwen3.8-Flash-DGX-UltraFast
+cd qwen3.8-flash-next-gb10-ultrafast
 python3 -m venv recipe/.venv
 . recipe/.venv/bin/activate
 pip install --upgrade huggingface_hub
@@ -114,13 +114,15 @@ hf download Saren/Qwen3.8-Flash-Next-ple-table-fp8 \
   --revision 50511b0a41aa1d34b8beb7e5d4bb06a0b650dc14 \
   --local-dir "$HOME/models/ple-table-fp8"
 
-# Build the image, then the T80 dense-MTP drafter directory
+# Build the base image, the verification-gate image (iter7g), then the
+# T80 dense-MTP drafter directory
 bash recipe/build/image/build.sh --run
+bash recipe/build/image/build-iter7g.sh --run
 bash recipe/build/model/build.sh --run
 
-# Show the full docker command, then start the server (runs detached)
-bash recipe/config/v16b/launch.sh --print
-bash recipe/config/v16b/launch.sh --run
+# Show the full docker command, then start the promoted server (runs detached)
+bash recipe/config/v19a-w5/launch.sh --print
+bash recipe/config/v19a-w5/launch.sh --run
 
 # Wait for the server to load, then send a test request
 until curl -fsS http://localhost:8000/v1/models >/dev/null 2>&1; do sleep 10; done
@@ -135,7 +137,7 @@ Follow startup with `docker logs -f qwen38-flash`. The server exposes an OpenAI-
 
 ## Configuration
 
-The promoted launch pins `GPU_MEM=0.01`, `KV_BYTES=16g`, `SEQS=8`, `CTX=262144`, MTP depth 3, block rejection with probabilistic draft sampling, and prefix caching. `launch.sh` sources [`recipe/config/v16b/env`](recipe/config/v16b/env) under a cleared environment, so edit that file rather than exporting variables. Changing any pinned value produces a new variant whose speed and quality must be measured separately. [Configuration reference](docs/CONFIGURATION.md).
+The promoted launch, **v19a-w5**, pins `GPU_MEM=0.01`, `KV_BYTES=16g`, `SEQS=8`, `CTX=262144`, **MTP depth 4** (the W5 window), block rejection with probabilistic draft sampling, the mixed 39.5%-Han draft vocabulary, and prefix caching, on the deterministic floor: the MoE arrival-order shim, the drafter-Marlin epilogue fix, the pinned triton config and the compile-cache mount (all set in [`recipe/config/v19a-w5/env`](recipe/config/v19a-w5/env)). `launch.sh` sources that env file under a cleared environment, so edit the file rather than exporting variables. Changing any pinned value produces a new variant whose speed and quality must be measured separately; the MTP=3 reference (v19a-w4) and the upstream-stock configuration (v16b) ship alongside it. [Configuration reference](docs/CONFIGURATION.md).
 
 ## How it works
 
@@ -143,7 +145,8 @@ The promoted launch pins `GPU_MEM=0.01`, `KV_BYTES=16g`, `SEQS=8`, `CTX=262144`,
 AutoRound INT4 experts + FP8 side layers + INT8 output head
              │
              ├── FP8 PLE table, read by mmap from storage
-             ├── MTP depth 3, 65,536-id draft vocabulary, dense drafter head
+             ├── MTP depth 4 (adaptive 3-4), 65,536-id mixed draft vocabulary
+             │   (39.5% Han, +31.3% Chinese prose throughput)
              └── fast PLE gather + piecewise CUDA graphs + prefix cache
                          ↓
                 vLLM verifier and sampler → response
@@ -151,7 +154,7 @@ AutoRound INT4 experts + FP8 side layers + INT8 output head
 
 **Target precision.** AutoRound W4A16 packs the routed-expert weights to four bits with 16-bit activations. FP8 side layers and an INT8 output head keep the nonexpert paths at eight bits, where 3-bit GGUF and NVFP4 recipes compress target weights further. The FP8 PLE table is memory-mapped from storage rather than held entirely in GPU memory, which leaves room for the 16 GB KV pool.
 
-**Drafting.** The dense T80 MTP drafter proposes three tokens per step. A 65,536-id draft vocabulary and FP8 drafter experts make each proposal cheaper. The target verifies every drafted token with block rejection, so the drafter changes speed, not the output distribution. Unlike n-gram copy speculation, which needs a matching earlier span, the MTP head drafts from the model itself and also covers original code, reasoning and tool output.
+**Drafting.** The dense T80 MTP drafter proposes three to four tokens per step (the promoted v19a-w5 runs the W5 window; the verification width adapts per step on the armed configuration). A 65,536-id draft vocabulary, rebalanced to 39.5% Han tokens for the Chinese gains above, and FP8 drafter experts make each proposal cheaper. The target verifies every drafted token with block rejection, so the drafter changes speed, not the output distribution. Unlike n-gram copy speculation, which needs a matching earlier span, the MTP head drafts from the model itself and also covers original code, reasoning and tool output.
 
 **Per-step overhead.** A low-latency SM12x GEMM, a sort-free verify-path top-k and piecewise CUDA graphs trim compute, selection and launch overhead around each target pass. The image runs vLLM's V2 model runner, where async scheduling is on by default with MTP, and adds an asynchronous short-convolution host-to-device transfer, guarded recurrent-state alignment and retained draft prefix-cache blocks.
 
@@ -159,7 +162,7 @@ AutoRound INT4 experts + FP8 side layers + INT8 output head
 
 ## Benchmarks and evaluation
 
-- **Stream curve.** Three rounds at each of 1 to 8 streams on the copy-heavy workload, reported as peak and median, with tokens per step and time to first token. The five-stream point was measured in two sessions. [Runner](recipe/benchmarks/bench_copy_streams.py) · [results](docs/BENCHMARKS.md#measured-peak-rates) · [raw records](docs/results/).
+- **Stream curve.** Three rounds at each of 1 to 8 streams on the copy-heavy workload, reported as peak and median, with tokens per step and time to first token. The five-stream point was measured in two sessions. [Runner](recipe/benchmarks/bench_copy_streams.py) · raw per-round records in [docs/benchmarks](docs/benchmarks/).
 - **Agent-shaped decode.** Cached long system prefix, tool schemas, six coding tasks, three repeats each, 1,500 generated tokens, thinking on. [Step-time comparison](docs/BENCHMARKS.md#agent-shaped-decode).
 - **Quality.** A fixed 492-item suite (code with execution checks, math, knowledge, instruction following, tool calls, long-context needles), a 24-item long-generation arm and a teacher-forced prefill comparison. [Evaluation](docs/EVALS.md).
 
@@ -168,11 +171,13 @@ AutoRound INT4 experts + FP8 side layers + INT8 output head
 | Path | Contents |
 |---|---|
 | [`AGENTS.md`](AGENTS.md) | Step-by-step instructions for a coding agent to set up the recipe on a GB10 over SSH, with your approval at each step |
-| [`recipe/config/v16b/`](recipe/config/v16b/) | Promoted launcher, `env`, image tag and draft vocabulary ids |
-| [`recipe/build/image/`](recipe/build/image/) | Staged iter6c and iter6d Dockerfiles, patches, hash preflight and CPU tests |
+| [`recipe/config/v19a-w5/`](recipe/config/v19a-w5/) | **Promoted** launcher, `env` (the deterministic floor + MTP=4) and draft vocabulary ids |
+| [`recipe/config/v19a-w4/`, `v16b/`](recipe/config/) | The MTP=3 reference and the upstream-stock configuration |
+| [`recipe/build/image/`](recipe/build/image/) | Staged iter6→iter7g Dockerfiles, the patch chain, hash preflight, CPU tests and the verification-gate runner |
 | [`recipe/build/model/`](recipe/build/model/) | T80 dense-MTP g32 checkpoint builder, tests and reference report |
 | [`recipe/benchmarks/`](recipe/benchmarks/) | Stream-curve, agent-shaped and standalone decode benchmark scripts |
-| [`docs/`](docs/) | [Build](docs/BUILD.md), [configuration](docs/CONFIGURATION.md), [architecture](docs/ARCHITECTURE.md), [benchmarks](docs/BENCHMARKS.md), [evaluation](docs/EVALS.md), [changelog](docs/CHANGELOG.md) and [result tables](docs/results/) |
+| [`docs/benchmarks/`](docs/benchmarks/) | Raw per-round JSON and boot fingerprints for every number in this README |
+| [`docs/`](docs/) | [Build](docs/BUILD.md), [configuration](docs/CONFIGURATION.md), [architecture](docs/ARCHITECTURE.md), [benchmarks](docs/BENCHMARKS.md), [evaluation](docs/EVALS.md) and [changelog](docs/CHANGELOG.md) |
 
 ## Acknowledgements
 
@@ -190,4 +195,4 @@ GitHub's "Cite this repository" menu reads [CITATION.cff](CITATION.cff).
 
 ## Draft vocabulary note
 
-The MTP drafter proposes tokens from a bundled 65,536-id draft vocabulary built from English and code text. Output in other languages, notably CJK, gets lower draft acceptance and therefore lower decode speed; upstream reports the same effect for its own English/code-weighted set. Output quality is unaffected, because the target model verifies every drafted token with block rejection. See [Configuration](docs/CONFIGURATION.md#draft-vocabulary) for details.
+The promoted configuration ships a **mixed 65,536-id draft vocabulary**, 25,862 Han entries (39.5%) built from a cleaned 48.7M-token corpus (Chinese Wikipedia, Chinese technical docs, code), which is what delivers the +31.3% Chinese prose throughput. The upstream English/code-weighted set ships alongside it (`draft-vocab-ids-K65536.txt` in the stock config) for pure-English sessions. Output quality is unaffected either way, because the target model verifies every drafted token with block rejection; the vocabulary changes which tokens get *drafted*, not what the target can *say*. See [Configuration](docs/CONFIGURATION.md#draft-vocabulary) for details.
