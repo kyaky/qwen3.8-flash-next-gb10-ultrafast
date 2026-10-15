@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: Apache-2.0
+# iter7c: DETHASH per-layer hash hook (D-011 determinism localization).
+# Adds, on top of iter7b (P2 stage-1c armed wiring):
+#   - awdbg_hash.py in site-packages: env-gated (DET_HASH_LAYERS=1) torch
+#     forward hooks on every decoder layer of the target language model
+#     (plus embedding, final HC mixer, model output, ForCausalLM output)
+#     logging one DETLAYR jsonl line per layer per forward carrying sha256
+#     of the exact-cast (fp32/int64) input and output tensor bytes; drill
+#     mode (DET_HASH_DRILL=<layer idx>) adds DETSUB lines for the drilled
+#     layers' sub-modules (attention core / router / experts / norms) at
+#     DET_HASH_DEPTH (default 2).  The runner's execute_model is instance-
+#     wrapped to stamp a global forward index + scheduled-token/request
+#     counts so the repeats align by forward slot (prefill = first forward
+#     of a request, verify = [1+num_spec, hidden]).
+#   - model_runner.py: load_model tail calls awdbg_hash.maybe_install inside
+#     try/except (anchor get_offloader().post_init(); the iter7b copy is
+#     preserved as model_runner.py.orig-det).  Inert and zero-overhead when
+#     DET_HASH_LAYERS is unset; never allowed to break model loading.
+# Numerics: hashing only casts/copies; no model code path is altered.
+FROM qwen38-flash-dgx:iter7b-20261013
+
+ARG SP=/usr/local/lib/python3.12/dist-packages
+ARG MR=${SP}/vllm/v1/worker/gpu/model_runner.py
+
+COPY src/awdbg_hash.py ${SP}/awdbg_hash.py
+COPY src/patch_layer_hashes.py /tmp/patch_layer_hashes.py
+RUN cp ${MR} ${MR}.orig-det \
+ && python3 /tmp/patch_layer_hashes.py ${MR} \
+ && rm /tmp/patch_layer_hashes.py \
+ && python3 -c "import ast; ast.parse(open('${MR}').read()); ast.parse(open('${SP}/awdbg_hash.py').read()); print('dethash ast OK')"

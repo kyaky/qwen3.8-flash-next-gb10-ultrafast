@@ -1,0 +1,85 @@
+# SPDX-License-Identifier: Apache-2.0
+# iter7b: P2 stage-1c ARMED wiring + P2 stage-1b RUNNER-side width plumbing.
+# Applies, in order (both patches apply to scheduler.py sequentially):
+#   1. patch_adaptive_width_armed.py, the scheduler's dynamic-SD K site
+#      gains an armed/forced elif that drives
+#      SchedulerOutput.num_spec_tokens_to_schedule from the controller
+#      (transition contract: the width takes effect at the forward boundary
+#      of the NEXT proposal; no pending-width clamp), and the controller
+#      install call gains launch_k=self.num_spec_tokens (the
+#      launch-at-max-width invariant guard).
+#   2. patch_width_runner.py, the stage-1b RUNNER side (the V2 path had
+#      ZERO consumers of num_spec_tokens_to_schedule). Round 5 (gate run
+#      2026-10-14-014411 fixes): the worker evidence emitter is gated to
+#      SCHEDULED batches (requested_k > 0, the JIT kernel warmup's six
+#      fabricated non-dummy steps carry the make_empty default 0 and never
+#      reach the scheduler; they desynced the C2 seq counters by exactly 6
+#      in the round-4 live run), the C1 position-0 count moved to the
+#      prefill rejoin, and the C1 counts also ride
+#      ModelRunnerOutput.sampled_per_pos because SchedulerConfig.
+#      async_scheduling=None AUTO-enables the AsyncScheduler for MTP boots
+#      (the async scheduler never pulls the post-step DraftTokenIds
+#      channel, which starved the round-4 C1 fold into a zero counter
+#      delta):
+#        - scheduler.py: per-request acc/rej collection + the C2 SCHED
+#          AWDBG1B evidence line at the end of update_from_output, plus the
+#          C1 staged fold (update_draft_token_ids stages the worker's
+#          DraftTokenIds.sampled_per_pos, sync mode only, and logs a
+#          one-time sync-channel liveness line; the end of update_from_output
+#          folds the staged list into SpecDecodingStats one step later AND
+#          stages the same step's list from ModelRunnerOutput.sampled_per_pos
+#          after the fold, so both scheduler modes feed the fold),
+#        - gpu/model_runner.py: ExecuteModelState carries the per-step K,
+#          the V2 propose call passes it into speculator.propose, the
+#          proposal storage write narrows to the returned k_eff columns,
+#          DraftTokensHandler carries the proposal width AND the
+#          speculator's executed-sample counter (C1 transport; the
+#          speculator-None case falls back to the always-defined req_states
+#          buffer), ModelRunnerOutput.sampled_per_pos is set right after
+#          propose (the round-5 carrier), and the C2 WORKER AWDBG1B evidence
+#          line fires after each propose that belongs to a SCHEDULED batch
+#          (requested_k > 0) with WORKER TRUTH (every batch row samples
+#          every position 0..k_eff-1),
+#        - spec_decode/autoregressive/speculator.py: propose() accepts
+#          num_spec_tokens_to_schedule, k_eff = min(scheduled K, buffered
+#          capacity), the draft decode loop bound and the returned
+#          draft_tokens slice honor k_eff; the draft_logits cache keeps its
+#          K_max-strided buffer (columns >= k_eff unused, the masking
+#          contract); the C1 per-position executed-sample counter resets
+#          per real propose (None on dummy/profile) and counts position 0
+#          at the prefill rejoin (after the eager/captured-graph branches
+#          rejoin, num_reqs once per real call) plus positions 1..k_eff-1
+#          after each eager _generate_draft call,
+#        - spec_decode/metrics.py: SpecDecodingStats.
+#          num_sampled_draft_tokens_per_pos (launch-K sized) + the
+#          vllm:spec_decode_num_sampled_draft_tokens_per_pos counter
+#          (engine/model_name/position labels, pre-created at init),
+#        - v1/outputs.py: DraftTokenIds.sampled_per_pos + the round-5
+#          ModelRunnerOutput.sampled_per_pos carrier (C1 transport on both
+#          scheduler modes),
+#        - spec_decode/utils.py: DraftTokensHandler stages + ships
+#          sampled_per_pos on BOTH paths (including the
+#          no-structured-output placeholder path).
+#      awdbg1b_evidence.py (pure-stdlib JSON builder for both C2 emitters)
+#      is copied next to vllm in site-packages; both emitters are gated by
+#      VLLM_SPECDBG_EVIDENCE=1 (read once, default off = zero overhead).
+# The scheduler.py.orig pristine copy from iter7a is preserved untouched.
+FROM qwen38-flash-dgx:iter7a-20261013
+
+ARG SP=/usr/local/lib/python3.12/dist-packages
+ARG SCHED=${SP}/vllm/v1/core/sched/scheduler.py
+ARG RUNNER=${SP}/vllm/v1/worker/gpu/model_runner.py
+ARG SPEC=${SP}/vllm/v1/worker/gpu/spec_decode/autoregressive/speculator.py
+ARG METRICS=${SP}/vllm/v1/spec_decode/metrics.py
+ARG OUTPUTS=${SP}/vllm/v1/outputs.py
+ARG SDUTILS=${SP}/vllm/v1/worker/gpu/spec_decode/utils.py
+
+COPY src/vllm_adaptive_width.py ${SP}/vllm_adaptive_width.py
+COPY src/awdbg1b_evidence.py ${SP}/awdbg1b_evidence.py
+COPY src/patch_adaptive_width_armed.py /tmp/patch_adaptive_width_armed.py
+COPY src/patch_width_runner.py /tmp/patch_width_runner.py
+RUN python3 /tmp/patch_adaptive_width_armed.py ${SCHED} \
+ && python3 /tmp/patch_width_runner.py ${SCHED} ${RUNNER} ${SPEC} \
+    ${METRICS} ${OUTPUTS} ${SDUTILS} \
+ && rm /tmp/patch_adaptive_width_armed.py /tmp/patch_width_runner.py \
+ && python3 -c "import ast; [ast.parse(open(p).read()) for p in ('${SCHED}','${RUNNER}','${SPEC}','${METRICS}','${OUTPUTS}','${SDUTILS}')]; print('adaptive width armed wiring + stage-1b runner width + C1 counter OK')"

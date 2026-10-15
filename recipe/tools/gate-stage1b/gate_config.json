@@ -1,0 +1,76 @@
+{
+ "base": "http://localhost:8000",
+ "model": "qwen",
+ "container": "qwen38-flash",
+ "repo_root": "$GB10_REPO",
+ "base_config_dir": "recipe/config/v18a-g2",
+ "baseline_config_dir": "recipe/config/v17a-off",
+ "scratch_parent": "$GB10_AGENT_DIR/runs",
+ "out_dir": null,
+ "boot": {
+  "launch_k": 4,
+  "candidates": [
+   3,
+   4
+  ],
+  "force_k": 3,
+  "ready_timeout_s": 900,
+  "image_override": null
+ },
+ "scrape_interval_s": 2.0,
+ "window_skew_steps": 2,
+ "p3": {
+  "s3_shorts": 3,
+  "s3_short_max_tokens": 192,
+  "s3_stagger_s": 1.5,
+  "s6_prefix_target_tokens": 3000,
+  "prefix_block_tokens": 1600,
+  "s4_shorts": 7,
+  "s4_topup": 3,
+  "s4_short_max_tokens": 160,
+  "s4_stagger_s": 0.3,
+  "s4_max_batched_tokens": 8192,
+  "s4_leftover_targets": [
+   8,
+   7,
+   11
+  ],
+  "s4_fallback_target_tokens": 9000
+ },
+ "workload": {
+  "p1_requests": 4,
+  "p1_max_tokens": 96,
+  "p2_waves": 4,
+  "p2_wave_size": 4,
+  "p2_max_tokens": [
+   96,
+   64,
+   48,
+   128
+  ],
+  "wave_stagger_s": 2.0
+ },
+ "p4": {
+  "seeds": [
+   7,
+   11,
+   13,
+   17,
+   19,
+   23,
+   29,
+   31
+  ],
+  "sample_max_tokens": 64,
+  "sample_temperature": 0.7,
+  "agreement_min": 0.98,
+  "rate_delta_max": 0.15,
+  "baseline_file": null
+ },
+ "p5": {
+  "run_ema_probe": false,
+  "ema_cliff_steps": 60
+ },
+ "allow_boot": false,
+ "live_ok": false
+}

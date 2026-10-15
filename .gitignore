@@ -1,0 +1,6 @@
+
+# local/sensitive artifacts
+.env
+selftest-out/
+*.partial
+__pycache__/

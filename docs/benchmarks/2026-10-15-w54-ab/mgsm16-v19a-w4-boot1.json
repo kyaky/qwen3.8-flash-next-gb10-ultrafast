@@ -1,0 +1,98 @@
+[
+ {
+  "lang": "en",
+  "answer": 27,
+  "ok": true,
+  "reply_tail": "\n\nJanet has **27 apples** in total."
+ },
+ {
+  "lang": "en",
+  "answer": 150,
+  "ok": true,
+  "reply_tail": "\n\nThe train travels **150 km**."
+ },
+ {
+  "lang": "zh",
+  "answer": 27,
+  "ok": true,
+  "reply_tail": "\n\n珍妮特一共有：\n\n3 + 4 × 6 = 3 + 24 = 27 个苹果。\n\n答案：27个苹果。"
+ },
+ {
+  "lang": "zh",
+  "answer": 150,
+  "ok": true,
+  "reply_tail": "\n\n行驶距离 = 速度 × 时间 = 60 × 2.5 = 150 公里。"
+ },
+ {
+  "lang": "es",
+  "answer": 27,
+  "ok": true,
+  "reply_tail": "\n\nJanet tiene **27 manzanas** en total.\n\nCálculo:  \n3 + (4 × 6) = 3 + 24 = **27**"
+ },
+ {
+  "lang": "es",
+  "answer": 150,
+  "ok": true,
+  "reply_tail": "l tren recorre:\n\n\\[\n60 \\text{ km/h} \\times 2.5 \\text{ h} = 150 \\text{ km}\n\\]\n\n**Respuesta: 150 km.**"
+ },
+ {
+  "lang": "fr",
+  "answer": 27,
+  "ok": true,
+  "reply_tail": "\n\nJanet a **27 pommes** au total."
+ },
+ {
+  "lang": "fr",
+  "answer": 150,
+  "ok": true,
+  "reply_tail": "ain parcourt :\n\n\\[\n60 \\text{ km/h} \\times 2{,}5 \\text{ h} = 150 \\text{ km}\n\\]\n\n**Réponse : 150 km.**"
+ },
+ {
+  "lang": "de",
+  "answer": 27,
+  "ok": true,
+  "reply_tail": "\n\nJanet hat insgesamt **27 Äpfel**.\n\nRechnung:  \n3 + (4 × 6) = 3 + 24 = **27**"
+ },
+ {
+  "lang": "de",
+  "answer": 150,
+  "ok": true,
+  "reply_tail": " **150 km** zurück.\n\nRechnung:  \n\\( 60 \\, \\text{km/h} \\times 2{,}5 \\, \\text{h} = 150 \\, \\text{km} \\)"
+ },
+ {
+  "lang": "ru",
+  "answer": 27,
+  "ok": true,
+  "reply_tail": "\nУ Джанет было 3 яблока, и она купила ещё \\(4 \\times 6 = 24\\) яблока.\n\nВсего: \\(3 + 24 = 27\\) яблок."
+ },
+ {
+  "lang": "ru",
+  "answer": 150,
+  "ok": true,
+  "reply_tail": "\n\nПоезд проедет:\n\n60 км/ч × 2,5 ч = **150 км**."
+ },
+ {
+  "lang": "ja",
+  "answer": 27,
+  "ok": true,
+  "reply_tail": "\n\nりんごは合計 **27個** です。\n\n計算：  \n3 + 6 × 4 = 3 + 24 = 27"
+ },
+ {
+  "lang": "ja",
+  "answer": 150,
+  "ok": true,
+  "reply_tail": "\n\n60 km/h × 2.5 h = **150 km** です。"
+ },
+ {
+  "lang": "ar",
+  "answer": 27,
+  "ok": true,
+  "reply_tail": "\n\nلديها في المجموع:\n\n3 + (4 × 6) = 3 + 24 = **27 تفاحة**."
+ },
+ {
+  "lang": "ar",
+  "answer": 150,
+  "ok": true,
+  "reply_tail": "\n\nالمسافة = السرعة × الزمن  \n= 60 × 2.5 = **150 كيلومترًا**."
+ }
+]

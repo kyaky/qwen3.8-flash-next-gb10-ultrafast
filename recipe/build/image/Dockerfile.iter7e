@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: Apache-2.0
+# iter7e (THROWAWAY experiment image, torch-determinism lane 2026-10-14):
+# PyTorch global deterministic-algorithms switch for the D-011/D-012 decode
+# tie-flip probe.  On top of iter7d (moe-align stable-sort shim + DETHASH
+# hooks, both kept unchanged - diagnostic/shim layers):
+#   - determinism_bootstrap.py in site-packages + zz_determinism_bootstrap.pth
+#     import hook: at interpreter startup in EVERY container process
+#     (engine core, workers, API server, PLE prewarm pool) calls
+#     torch.use_deterministic_algorithms(True, warn_only=True) and pins
+#     cudnn.deterministic=True / cudnn.benchmark=False, printing one
+#     DETERM-INSTALLED line for the boot-gate grep.  warn_only=True so ops
+#     without deterministic implementations warn instead of raising (the
+#     batch-invariant arm already proved a strict boot dies on GDN_ATTN).
+#   - ENV CUBLAS_WORKSPACE_CONFIG=:16:8: the workspace config cuBLAS needs
+#     once the switch is armed; it also disables cuBLAS's split-k atomic
+#     GEMM algorithms, which are run-to-run nondeterministic on identical
+#     inputs.  ENV TORCH_USE_DETERMINISTIC_ALGORITHMS=1 and
+#     DETERM_BOOTSTRAP=1 are self-documenting markers (verified in-image:
+#     torch 2.13 does not read either; DETERM_BOOTSTRAP=0 boots this image
+#     as a stock-behavior control arm).
+# Numerics: no model code path is altered; the switch only selects
+# deterministic ATen kernel variants where they exist and warns elsewhere.
+# Custom CUDA kernels are outside its reach - that boundary is the result.
+FROM qwen38-flash-dgx:iter7d-20261014
+
+ARG SP=/usr/local/lib/python3.12/dist-packages
+
+COPY src/determinism_bootstrap.py ${SP}/determinism_bootstrap.py
+COPY src/zz_determinism_bootstrap.pth ${SP}/zz_determinism_bootstrap.pth
+ENV CUBLAS_WORKSPACE_CONFIG=:16:8 \
+    TORCH_USE_DETERMINISTIC_ALGORITHMS=1 \
+    DETERM_BOOTSTRAP=1
+RUN python3 -c "import ast; ast.parse(open('${SP}/determinism_bootstrap.py').read()); print('determinism bootstrap ast OK')" \
+ && python3 -c "import torch; assert torch.are_deterministic_algorithms_enabled(), 'bootstrap did not arm the switch'; assert torch._C._get_deterministic_algorithms_warn_only(), 'warn_only not armed'; assert torch.backends.cudnn.deterministic, 'cudnn.deterministic not armed'; print('determinism bootstrap arm OK (warn_only=True)')"

@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: Apache-2.0
+# iter6e: the deterministic-QSA patch subset on top of the pinned floor image -
+# block top-k (vllm#55122), built standalone as _C_det from vendored sources.
+# Kernel sources are byte-exact from the vendored kernel-det snapshot
+# @e0ef69d4f5575dad00d34e05479eaf4c6547bace, sha256-verified against the recorded pins
+# records in its Dockerfile ADD --checksum lines (see build-iter6e.sh preflight).
+# The patch is inert unless VLLM_QSA_DET_TOPK=1; the stock floor behavior is unchanged.
+FROM qwen38-flash-dgx:iter6d-20260910
+
+ARG SP=/usr/local/lib/python3.12/dist-packages
+ARG QSA=${SP}/vllm/models/qwen3_8_flash_next/nvidia/ops/qsa.py
+
+COPY src/kernel-det /opt/llm/kernel-det/src
+RUN cd /opt/llm/kernel-det/src \
+ && DET_BUILD_DIR=/opt/llm/kernel-det/build DET_ARCH=121a python3 build_det.py 2>&1 | tail -3 \
+ && cp /opt/llm/kernel-det/build/_C_det.so /opt/llm/kernel-det/_C_det.so \
+ && ls -l /opt/llm/kernel-det/_C_det.so
+
+COPY src/patch_qsadet.py /tmp/patch_qsadet.py
+RUN cp ${QSA} ${QSA}.orig \
+ && python3 /tmp/patch_qsadet.py ${QSA} \
+ && rm /tmp/patch_qsadet.py \
+ && python3 -c "import ast; ast.parse(open('${QSA}').read()); print('qsadet wired OK')"
+
+# --- loader subset (measurement-gated; env kill switches VLLM_LOAD_CLONE /
+# VLLM_MOE_NAME_INDEX / VLLM_LOAD_EMBED_CHUNK, all default-on upstream, default
+# OFF in our v16c env until the boot RED/GREEN lands) ---
+COPY src/patch_moe_load_clone.py /tmp/p1.py
+RUN python3 /tmp/p1.py ${SP} && rm /tmp/p1.py
+
+COPY src/patch_moe_name_index.py /tmp/p2.py
+RUN python3 /tmp/p2.py ${SP} && rm /tmp/p2.py
+
+COPY src/patch_embed_chunked_copy.py /tmp/p3.py
+RUN python3 /tmp/p3.py ${SP} && rm /tmp/p3.py
+
+RUN python3 - <<'PY'
+import ast
+for p in (
+    "/usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/fused_moe/routed_experts.py",
+    "/usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/vocab_parallel_embedding.py",
+):
+    ast.parse(open(p).read())
+print("loader patches parse OK")
+PY

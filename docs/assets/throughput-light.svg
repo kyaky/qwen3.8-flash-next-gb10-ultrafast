@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420" font-family="Segoe UI,Helvetica,Arial,sans-serif">
+<rect width="900" height="420" fill="#ffffff"/>
+<line x1="70" y1="364.0" x2="870" y2="364.0" stroke="#d0d7de" stroke-width="1"/><text x="62" y="368.0" fill="#656d76" font-size="12" text-anchor="end">0</text>
+<line x1="70" y1="317.7" x2="870" y2="317.7" stroke="#d0d7de" stroke-width="1"/><text x="62" y="321.7" fill="#656d76" font-size="12" text-anchor="end">40</text>
+<line x1="70" y1="271.4" x2="870" y2="271.4" stroke="#d0d7de" stroke-width="1"/><text x="62" y="275.4" fill="#656d76" font-size="12" text-anchor="end">80</text>
+<line x1="70" y1="225.1" x2="870" y2="225.1" stroke="#d0d7de" stroke-width="1"/><text x="62" y="229.1" fill="#656d76" font-size="12" text-anchor="end">120</text>
+<line x1="70" y1="178.9" x2="870" y2="178.9" stroke="#d0d7de" stroke-width="1"/><text x="62" y="182.9" fill="#656d76" font-size="12" text-anchor="end">160</text>
+<line x1="70" y1="132.6" x2="870" y2="132.6" stroke="#d0d7de" stroke-width="1"/><text x="62" y="136.6" fill="#656d76" font-size="12" text-anchor="end">200</text>
+<line x1="70" y1="86.3" x2="870" y2="86.3" stroke="#d0d7de" stroke-width="1"/><text x="62" y="90.3" fill="#656d76" font-size="12" text-anchor="end">240</text>
+<line x1="70" y1="40.0" x2="870" y2="40.0" stroke="#d0d7de" stroke-width="1"/><text x="62" y="44.0" fill="#656d76" font-size="12" text-anchor="end">280</text>
+<text x="70.0" y="384" fill="#656d76" font-size="12" text-anchor="middle">N1</text>
+<text x="184.3" y="384" fill="#656d76" font-size="12" text-anchor="middle">N2</text>
+<text x="298.6" y="384" fill="#656d76" font-size="12" text-anchor="middle">N3</text>
+<text x="412.9" y="384" fill="#656d76" font-size="12" text-anchor="middle">N4</text>
+<text x="527.1" y="384" fill="#656d76" font-size="12" text-anchor="middle">N5</text>
+<text x="641.4" y="384" fill="#656d76" font-size="12" text-anchor="middle">N6</text>
+<text x="755.7" y="384" fill="#656d76" font-size="12" text-anchor="middle">N7</text>
+<text x="870.0" y="384" fill="#656d76" font-size="12" text-anchor="middle">N8</text>
+<text x="470" y="406" fill="#656d76" font-size="13" text-anchor="middle">concurrent streams (copy-heavy, window tok/s median)</text>
+<polyline points="70.0,275.2 184.3,231.2 298.6,194.9 412.9,161.3 527.1,134.9 641.4,111.2 755.7,86.8 870.0,61.7" fill="none" stroke="#1a7f37" stroke-width="2.5"/>
+<circle cx="70.0" cy="275.2" r="3" fill="#1a7f37"/>
+<circle cx="184.3" cy="231.2" r="3" fill="#1a7f37"/>
+<circle cx="298.6" cy="194.9" r="3" fill="#1a7f37"/>
+<circle cx="412.9" cy="161.3" r="3" fill="#1a7f37"/>
+<circle cx="527.1" cy="134.9" r="3" fill="#1a7f37"/>
+<circle cx="641.4" cy="111.2" r="3" fill="#1a7f37"/>
+<circle cx="755.7" cy="86.8" r="3" fill="#1a7f37"/>
+<circle cx="870.0" cy="61.7" r="3" fill="#1a7f37"/>
+<text x="878.0" y="65.7" fill="#1a7f37" font-size="12" font-weight="bold">W5 · MTP=4 (promoted)</text>
+<polyline points="70.0,282.8 184.3,242.0 298.6,203.2 412.9,168.7 527.1,149.1 641.4,126.6 755.7,110.4 870.0,75.5" fill="none" stroke="#0969da" stroke-width="2.5"/>
+<circle cx="70.0" cy="282.8" r="3" fill="#0969da"/>
+<circle cx="184.3" cy="242.0" r="3" fill="#0969da"/>
+<circle cx="298.6" cy="203.2" r="3" fill="#0969da"/>
+<circle cx="412.9" cy="168.7" r="3" fill="#0969da"/>
+<circle cx="527.1" cy="149.1" r="3" fill="#0969da"/>
+<circle cx="641.4" cy="126.6" r="3" fill="#0969da"/>
+<circle cx="755.7" cy="110.4" r="3" fill="#0969da"/>
+<circle cx="870.0" cy="75.5" r="3" fill="#0969da"/>
+<text x="878.0" y="97.5" fill="#0969da" font-size="12" font-weight="bold">W4 · MTP=3</text>
+<text x="70.0" y="265.2" fill="#1a7f37" font-size="11" text-anchor="middle">77</text>
+<text x="70.0" y="300.8" fill="#0969da" font-size="11" text-anchor="middle">70</text>
+<text x="870.0" y="51.7" fill="#1a7f37" font-size="11" text-anchor="middle">261</text>
+<text x="870.0" y="93.5" fill="#0969da" font-size="11" text-anchor="middle">249</text>
+<text x="70" y="24" fill="#1f2328" font-size="16" font-weight="bold">Qwen3.8 Flash-Next · one DGX Spark (GB10) · W4A16 hybrid</text>
+</svg>

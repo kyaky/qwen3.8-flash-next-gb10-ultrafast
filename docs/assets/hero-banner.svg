@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" font-family="Segoe UI,Helvetica,Arial,sans-serif">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b1120"/><stop offset="1" stop-color="#101d33"/></linearGradient></defs>
+<rect width="1200" height="260" fill="url(#g)"/>
+<line x1="0" y1="190" x2="1200" y2="190" stroke="#1e2f4d" stroke-width="1"/>
+<text x="56" y="86" fill="#e6edf3" font-size="46" font-weight="bold">Qwen3.8 Flash-Next</text>
+<text x="57" y="122" fill="#58a6ff" font-size="22" font-weight="bold">GB10 UltraFast · DGX Spark (sm_121)</text>
+<text x="57" y="152" fill="#94a3b8" font-size="15">MTP block verification · W4A16 AutoRound hybrid · adaptive spec width · pinned deterministic floor</text>
+<text x="56" y="212" fill="#3fb950" font-size="30" font-weight="bold">76.8</text><text x="56" y="234" fill="#94a3b8" font-size="13">tok/s single-stream</text>
+<text x="336" y="212" fill="#3fb950" font-size="30" font-weight="bold">263</text><text x="336" y="234" fill="#94a3b8" font-size="13">tok/s @ 8 streams</text>
+<text x="616" y="212" fill="#3fb950" font-size="30" font-weight="bold">+9.2%</text><text x="616" y="234" fill="#94a3b8" font-size="13">copy N1 vs W4</text>
+<text x="896" y="212" fill="#3fb950" font-size="30" font-weight="bold">37/37</text><text x="896" y="234" fill="#94a3b8" font-size="13">kernel stochastic gate</text>
+</svg>

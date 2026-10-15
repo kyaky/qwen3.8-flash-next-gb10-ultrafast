@@ -1,0 +1,857 @@
+[
+ {
+  "rep": 0,
+  "samples": [
+   {
+    "task": "ctx128k-needle-mid",
+    "ok": true,
+    "ttft_s": 50.944822681020014,
+    "total_s": 54.59618164994754,
+    "chunks": 63,
+    "reasoning_chars": 649,
+    "content_chars": 14,
+    "prompt_tokens": 106136,
+    "completion_tokens": 178,
+    "cached_tokens": 0,
+    "decode_tok_s": 48.7489730576345,
+    "spec": {
+     "drafts": 60.0,
+     "draft_tokens": 240.0,
+     "accepted_tokens": 117.0,
+     "accepted_per_pos": [
+      47.0,
+      28.0,
+      24.0
+     ],
+     "prefix_hits": 0.0,
+     "prefix_queries": 106136.0,
+     "tokens_per_step": 2.95,
+     "accept_pos_rate": [
+      0.7833333333333333,
+      0.4666666666666667,
+      0.4
+     ]
+    },
+    "answer": "\n\nAX-7Q4F-2026",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-needle-end",
+    "ok": true,
+    "ttft_s": 28.923518180963583,
+    "total_s": 29.866303408984095,
+    "chunks": 19,
+    "reasoning_chars": 231,
+    "content_chars": 9,
+    "prompt_tokens": 106125,
+    "completion_tokens": 58,
+    "cached_tokens": 48480,
+    "decode_tok_s": 61.51984383736879,
+    "spec": {
+     "drafts": 16.0,
+     "draft_tokens": 64.0,
+     "accepted_tokens": 44.0,
+     "accepted_per_pos": [
+      13.0,
+      13.0,
+      10.0
+     ],
+     "prefix_hits": 48480.0,
+     "prefix_queries": 106125.0,
+     "tokens_per_step": 3.75,
+     "accept_pos_rate": [
+      0.8125,
+      0.8125,
+      0.625
+     ]
+    },
+    "answer": "\n\nDana R.",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-needle-start",
+    "ok": true,
+    "ttft_s": 47.41627424501348,
+    "total_s": 48.36835190805141,
+    "chunks": 19,
+    "reasoning_chars": 230,
+    "content_chars": 6,
+    "prompt_tokens": 106127,
+    "completion_tokens": 70,
+    "cached_tokens": 8080,
+    "decode_tok_s": 73.52341381126547,
+    "spec": {
+     "drafts": 16.0,
+     "draft_tokens": 64.0,
+     "accepted_tokens": 53.0,
+     "accepted_per_pos": [
+      15.0,
+      15.0,
+      13.0
+     ],
+     "prefix_hits": 8080.0,
+     "prefix_queries": 106127.0,
+     "tokens_per_step": 4.3125,
+     "accept_pos_rate": [
+      0.9375,
+      0.9375,
+      0.8125
+     ]
+    },
+    "answer": "\n\n4417",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-summary",
+    "ok": true,
+    "ttft_s": 27.438192198053002,
+    "total_s": 30.16566357202828,
+    "chunks": 47,
+    "reasoning_chars": 540,
+    "content_chars": 162,
+    "prompt_tokens": 106125,
+    "completion_tokens": 144,
+    "cached_tokens": 51712,
+    "decode_tok_s": 52.79615447993526,
+    "spec": {
+     "drafts": 44.0,
+     "draft_tokens": 176.0,
+     "accepted_tokens": 103.0,
+     "accepted_per_pos": [
+      35.0,
+      28.0,
+      22.0
+     ],
+     "prefix_hits": 51712.0,
+     "prefix_queries": 106125.0,
+     "tokens_per_step": 3.340909090909091,
+     "accept_pos_rate": [
+      0.7954545454545454,
+      0.6363636363636364,
+      0.5
+     ]
+    },
+    "answer": "\n\nAll audit notes describe reconciled ledger entries for the regional distribution center, and the overall outcome is that the audits passed with zero exceptions.",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-needle-mid2",
+    "ok": true,
+    "ttft_s": 19.69052153103985,
+    "total_s": 21.078018375090323,
+    "chunks": 26,
+    "reasoning_chars": 277,
+    "content_chars": 20,
+    "prompt_tokens": 106127,
+    "completion_tokens": 63,
+    "cached_tokens": 67872,
+    "decode_tok_s": 45.405508682878256,
+    "spec": {
+     "drafts": 23.0,
+     "draft_tokens": 92.0,
+     "accepted_tokens": 43.0,
+     "accepted_per_pos": [
+      15.0,
+      12.0,
+      11.0
+     ],
+     "prefix_hits": 67872.0,
+     "prefix_queries": 106127.0,
+     "tokens_per_step": 2.8695652173913047,
+     "accept_pos_rate": [
+      0.6521739130434783,
+      0.5217391304347826,
+      0.4782608695652174
+     ]
+    },
+    "answer": "\n\nMeridian Logistics",
+    "verified": true
+   }
+  ],
+  "group_median": 52.79615447993526
+ },
+ {
+  "rep": 1,
+  "samples": [
+   {
+    "task": "ctx128k-needle-mid",
+    "ok": true,
+    "ttft_s": 27.4082534390036,
+    "total_s": 30.497920067980886,
+    "chunks": 54,
+    "reasoning_chars": 584,
+    "content_chars": 14,
+    "prompt_tokens": 106136,
+    "completion_tokens": 157,
+    "cached_tokens": 51712,
+    "decode_tok_s": 50.8145437205207,
+    "spec": {
+     "drafts": 51.0,
+     "draft_tokens": 204.0,
+     "accepted_tokens": 109.0,
+     "accepted_per_pos": [
+      35.0,
+      30.0,
+      25.0
+     ],
+     "prefix_hits": 51712.0,
+     "prefix_queries": 106136.0,
+     "tokens_per_step": 3.1372549019607843,
+     "accept_pos_rate": [
+      0.6862745098039216,
+      0.5882352941176471,
+      0.49019607843137253
+     ]
+    },
+    "answer": "\n\nAX-7Q4F-2026",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-needle-end",
+    "ok": true,
+    "ttft_s": 19.68463282904122,
+    "total_s": 20.941235427046195,
+    "chunks": 24,
+    "reasoning_chars": 309,
+    "content_chars": 9,
+    "prompt_tokens": 106125,
+    "completion_tokens": 79,
+    "cached_tokens": 67872,
+    "decode_tok_s": 62.86792668216915,
+    "spec": {
+     "drafts": 21.0,
+     "draft_tokens": 84.0,
+     "accepted_tokens": 60.0,
+     "accepted_per_pos": [
+      19.0,
+      18.0,
+      14.0
+     ],
+     "prefix_hits": 67872.0,
+     "prefix_queries": 106125.0,
+     "tokens_per_step": 3.857142857142857,
+     "accept_pos_rate": [
+      0.9047619047619048,
+      0.8571428571428571,
+      0.6666666666666666
+     ]
+    },
+    "answer": "\n\nDana R.",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-needle-start",
+    "ok": true,
+    "ttft_s": 24.370529117062688,
+    "total_s": 25.299312054063194,
+    "chunks": 19,
+    "reasoning_chars": 166,
+    "content_chars": 6,
+    "prompt_tokens": 106127,
+    "completion_tokens": 57,
+    "cached_tokens": 58176,
+    "decode_tok_s": 61.37063648486144,
+    "spec": {
+     "drafts": 16.0,
+     "draft_tokens": 64.0,
+     "accepted_tokens": 43.0,
+     "accepted_per_pos": [
+      14.0,
+      11.0,
+      10.0
+     ],
+     "prefix_hits": 58176.0,
+     "prefix_queries": 106127.0,
+     "tokens_per_step": 3.6875,
+     "accept_pos_rate": [
+      0.875,
+      0.6875,
+      0.625
+     ]
+    },
+    "answer": "\n\n4417",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-summary",
+    "ok": true,
+    "ttft_s": 7.512748989043757,
+    "total_s": 10.396994706010446,
+    "chunks": 50,
+    "reasoning_chars": 589,
+    "content_chars": 213,
+    "prompt_tokens": 106125,
+    "completion_tokens": 139,
+    "cached_tokens": 92112,
+    "decode_tok_s": 48.19284264940641,
+    "spec": {
+     "drafts": 47.0,
+     "draft_tokens": 188.0,
+     "accepted_tokens": 95.0,
+     "accepted_per_pos": [
+      33.0,
+      28.0,
+      18.0
+     ],
+     "prefix_hits": 92112.0,
+     "prefix_queries": 106125.0,
+     "tokens_per_step": 3.021276595744681,
+     "accept_pos_rate": [
+      0.7021276595744681,
+      0.5957446808510638,
+      0.3829787234042553
+     ]
+    },
+    "answer": "\n\nThese notes describe routine quarterly reconciliations of regional distribution center ledgers (covering freight adjustments, inventory shrinkage, and carrier disputes), with audits passing with zer",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-needle-mid2",
+    "ok": true,
+    "ttft_s": 0.9911372049245983,
+    "total_s": 2.9274743529967964,
+    "chunks": 35,
+    "reasoning_chars": 426,
+    "content_chars": 20,
+    "prompt_tokens": 106127,
+    "completion_tokens": 97,
+    "cached_tokens": 105040,
+    "decode_tok_s": 50.09458197740638,
+    "spec": {
+     "drafts": 32.0,
+     "draft_tokens": 128.0,
+     "accepted_tokens": 68.0,
+     "accepted_per_pos": [
+      24.0,
+      18.0,
+      15.0
+     ],
+     "prefix_hits": 105040.0,
+     "prefix_queries": 106127.0,
+     "tokens_per_step": 3.125,
+     "accept_pos_rate": [
+      0.75,
+      0.5625,
+      0.46875
+     ]
+    },
+    "answer": "\n\nMeridian Logistics",
+    "verified": true
+   }
+  ],
+  "group_median": 50.8145437205207
+ },
+ {
+  "rep": 2,
+  "samples": [
+   {
+    "task": "ctx128k-needle-mid",
+    "ok": true,
+    "ttft_s": 0.9694967590039596,
+    "total_s": 2.950351509032771,
+    "chunks": 36,
+    "reasoning_chars": 366,
+    "content_chars": 14,
+    "prompt_tokens": 106136,
+    "completion_tokens": 115,
+    "cached_tokens": 105040,
+    "decode_tok_s": 58.05574588360269,
+    "spec": {
+     "drafts": 33.0,
+     "draft_tokens": 132.0,
+     "accepted_tokens": 81.0,
+     "accepted_per_pos": [
+      30.0,
+      22.0,
+      16.0
+     ],
+     "prefix_hits": 105040.0,
+     "prefix_queries": 106136.0,
+     "tokens_per_step": 3.4545454545454546,
+     "accept_pos_rate": [
+      0.9090909090909091,
+      0.6666666666666666,
+      0.48484848484848486
+     ]
+    },
+    "answer": "\n\nAX-7Q4F-2026",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-needle-end",
+    "ok": true,
+    "ttft_s": 0.9947607819922268,
+    "total_s": 2.005962783936411,
+    "chunks": 20,
+    "reasoning_chars": 221,
+    "content_chars": 9,
+    "prompt_tokens": 106125,
+    "completion_tokens": 56,
+    "cached_tokens": 105040,
+    "decode_tok_s": 55.37963719645707,
+    "spec": {
+     "drafts": 17.0,
+     "draft_tokens": 68.0,
+     "accepted_tokens": 38.0,
+     "accepted_per_pos": [
+      16.0,
+      11.0,
+      7.0
+     ],
+     "prefix_hits": 105040.0,
+     "prefix_queries": 106125.0,
+     "tokens_per_step": 3.235294117647059,
+     "accept_pos_rate": [
+      0.9411764705882353,
+      0.6470588235294118,
+      0.4117647058823529
+     ]
+    },
+    "answer": "\n\nDana R.",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-needle-start",
+    "ok": true,
+    "ttft_s": 0.9912640349939466,
+    "total_s": 2.6206019540550187,
+    "chunks": 30,
+    "reasoning_chars": 308,
+    "content_chars": 6,
+    "prompt_tokens": 106127,
+    "completion_tokens": 95,
+    "cached_tokens": 105040,
+    "decode_tok_s": 58.30589154565618,
+    "spec": {
+     "drafts": 27.0,
+     "draft_tokens": 108.0,
+     "accepted_tokens": 67.0,
+     "accepted_per_pos": [
+      22.0,
+      18.0,
+      15.0
+     ],
+     "prefix_hits": 105040.0,
+     "prefix_queries": 106127.0,
+     "tokens_per_step": 3.4814814814814814,
+     "accept_pos_rate": [
+      0.8148148148148148,
+      0.6666666666666666,
+      0.5555555555555556
+     ]
+    },
+    "answer": "\n\n4417",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-summary",
+    "ok": true,
+    "ttft_s": 0.9874582489719614,
+    "total_s": 2.567600848968141,
+    "chunks": 29,
+    "reasoning_chars": 371,
+    "content_chars": 51,
+    "prompt_tokens": 106125,
+    "completion_tokens": 79,
+    "cached_tokens": 105040,
+    "decode_tok_s": 49.995487749137965,
+    "spec": {
+     "drafts": 26.0,
+     "draft_tokens": 104.0,
+     "accepted_tokens": 56.0,
+     "accepted_per_pos": [
+      19.0,
+      14.0,
+      12.0
+     ],
+     "prefix_hits": 105040.0,
+     "prefix_queries": 106125.0,
+     "tokens_per_step": 3.1538461538461537,
+     "accept_pos_rate": [
+      0.7307692307692307,
+      0.5384615384615384,
+      0.46153846153846156
+     ]
+    },
+    "answer": "\n\nAll quarterly audits passed with zero exceptions.",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-needle-mid2",
+    "ok": true,
+    "ttft_s": 0.9762132189935073,
+    "total_s": 2.199268404976465,
+    "chunks": 23,
+    "reasoning_chars": 223,
+    "content_chars": 20,
+    "prompt_tokens": 106127,
+    "completion_tokens": 53,
+    "cached_tokens": 105040,
+    "decode_tok_s": 43.33410348724732,
+    "spec": {
+     "drafts": 20.0,
+     "draft_tokens": 80.0,
+     "accepted_tokens": 36.0,
+     "accepted_per_pos": [
+      12.0,
+      9.0,
+      9.0
+     ],
+     "prefix_hits": 105040.0,
+     "prefix_queries": 106127.0,
+     "tokens_per_step": 2.8,
+     "accept_pos_rate": [
+      0.6,
+      0.45,
+      0.45
+     ]
+    },
+    "answer": "\n\nMeridian Logistics",
+    "verified": true
+   }
+  ],
+  "group_median": 55.37963719645707
+ },
+ {
+  "rep": 3,
+  "samples": [
+   {
+    "task": "ctx128k-needle-mid",
+    "ok": true,
+    "ttft_s": 0.9634459570515901,
+    "total_s": 2.3320123601006344,
+    "chunks": 26,
+    "reasoning_chars": 249,
+    "content_chars": 14,
+    "prompt_tokens": 106136,
+    "completion_tokens": 85,
+    "cached_tokens": 105040,
+    "decode_tok_s": 62.1087875682375,
+    "spec": {
+     "drafts": 23.0,
+     "draft_tokens": 92.0,
+     "accepted_tokens": 62.0,
+     "accepted_per_pos": [
+      21.0,
+      16.0,
+      13.0
+     ],
+     "prefix_hits": 105040.0,
+     "prefix_queries": 106136.0,
+     "tokens_per_step": 3.6956521739130435,
+     "accept_pos_rate": [
+      0.9130434782608695,
+      0.6956521739130435,
+      0.5652173913043478
+     ]
+    },
+    "answer": "\n\nAX-7Q4F-2026",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-needle-end",
+    "ok": true,
+    "ttft_s": 0.9712119830073789,
+    "total_s": 2.1905525480397046,
+    "chunks": 23,
+    "reasoning_chars": 272,
+    "content_chars": 9,
+    "prompt_tokens": 106125,
+    "completion_tokens": 63,
+    "cached_tokens": 105040,
+    "decode_tok_s": 51.66727147991654,
+    "spec": {
+     "drafts": 20.0,
+     "draft_tokens": 80.0,
+     "accepted_tokens": 45.0,
+     "accepted_per_pos": [
+      16.0,
+      14.0,
+      9.0
+     ],
+     "prefix_hits": 105040.0,
+     "prefix_queries": 106125.0,
+     "tokens_per_step": 3.25,
+     "accept_pos_rate": [
+      0.8,
+      0.7,
+      0.45
+     ]
+    },
+    "answer": "\n\nDana R.",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-needle-start",
+    "ok": true,
+    "ttft_s": 0.9896910979878157,
+    "total_s": 1.743175234994851,
+    "chunks": 16,
+    "reasoning_chars": 194,
+    "content_chars": 6,
+    "prompt_tokens": 106127,
+    "completion_tokens": 60,
+    "cached_tokens": 105040,
+    "decode_tok_s": 79.63007720153209,
+    "spec": {
+     "drafts": 13.0,
+     "draft_tokens": 52.0,
+     "accepted_tokens": 49.0,
+     "accepted_per_pos": [
+      13.0,
+      13.0,
+      12.0
+     ],
+     "prefix_hits": 105040.0,
+     "prefix_queries": 106127.0,
+     "tokens_per_step": 4.769230769230769,
+     "accept_pos_rate": [
+      1.0,
+      1.0,
+      0.9230769230769231
+     ]
+    },
+    "answer": "\n\n4417",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-summary",
+    "ok": true,
+    "ttft_s": 1.0013943939702585,
+    "total_s": 3.076811939943582,
+    "chunks": 37,
+    "reasoning_chars": 394,
+    "content_chars": 219,
+    "prompt_tokens": 106125,
+    "completion_tokens": 112,
+    "cached_tokens": 105040,
+    "decode_tok_s": 53.96504439181397,
+    "spec": {
+     "drafts": 34.0,
+     "draft_tokens": 136.0,
+     "accepted_tokens": 81.0,
+     "accepted_per_pos": [
+      26.0,
+      21.0,
+      18.0
+     ],
+     "prefix_hits": 105040.0,
+     "prefix_queries": 106125.0,
+     "tokens_per_step": 3.3823529411764706,
+     "accept_pos_rate": [
+      0.7647058823529411,
+      0.6176470588235294,
+      0.5294117647058824
+     ]
+    },
+    "answer": "\n\nAll quarterly audits of the regional distribution center passed with zero exceptions, confirming that ledger entries for freight adjustments, inventory shrinkage, and carrier invoice disputes were p",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-needle-mid2",
+    "ok": true,
+    "ttft_s": 0.9809534120140597,
+    "total_s": 2.5047749259974808,
+    "chunks": 28,
+    "reasoning_chars": 314,
+    "content_chars": 20,
+    "prompt_tokens": 106127,
+    "completion_tokens": 70,
+    "cached_tokens": 105040,
+    "decode_tok_s": 45.93713854125411,
+    "spec": {
+     "drafts": 25.0,
+     "draft_tokens": 100.0,
+     "accepted_tokens": 48.0,
+     "accepted_per_pos": [
+      16.0,
+      13.0,
+      11.0
+     ],
+     "prefix_hits": 105040.0,
+     "prefix_queries": 106127.0,
+     "tokens_per_step": 2.92,
+     "accept_pos_rate": [
+      0.64,
+      0.52,
+      0.44
+     ]
+    },
+    "answer": "\n\nMeridian Logistics",
+    "verified": true
+   }
+  ],
+  "group_median": 53.96504439181397
+ },
+ {
+  "rep": 4,
+  "samples": [
+   {
+    "task": "ctx128k-needle-mid",
+    "ok": true,
+    "ttft_s": 0.9550295959925279,
+    "total_s": 3.3120388999814168,
+    "chunks": 42,
+    "reasoning_chars": 509,
+    "content_chars": 14,
+    "prompt_tokens": 106136,
+    "completion_tokens": 136,
+    "cached_tokens": 105040,
+    "decode_tok_s": 57.70023892983374,
+    "spec": {
+     "drafts": 39.0,
+     "draft_tokens": 156.0,
+     "accepted_tokens": 96.0,
+     "accepted_per_pos": [
+      31.0,
+      26.0,
+      22.0
+     ],
+     "prefix_hits": 105040.0,
+     "prefix_queries": 106136.0,
+     "tokens_per_step": 3.4615384615384617,
+     "accept_pos_rate": [
+      0.7948717948717948,
+      0.6666666666666666,
+      0.5641025641025641
+     ]
+    },
+    "answer": "\n\nAX-7Q4F-2026",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-needle-end",
+    "ok": true,
+    "ttft_s": 0.9913842329988256,
+    "total_s": 2.175408715964295,
+    "chunks": 23,
+    "reasoning_chars": 268,
+    "content_chars": 9,
+    "prompt_tokens": 106125,
+    "completion_tokens": 74,
+    "cached_tokens": 105040,
+    "decode_tok_s": 62.4987076404552,
+    "spec": {
+     "drafts": 20.0,
+     "draft_tokens": 80.0,
+     "accepted_tokens": 54.0,
+     "accepted_per_pos": [
+      18.0,
+      18.0,
+      11.0
+     ],
+     "prefix_hits": 105040.0,
+     "prefix_queries": 106125.0,
+     "tokens_per_step": 3.7,
+     "accept_pos_rate": [
+      0.9,
+      0.9,
+      0.55
+     ]
+    },
+    "answer": "\n\nDana R.",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-needle-start",
+    "ok": true,
+    "ttft_s": 0.9866906040115282,
+    "total_s": 2.291625407990068,
+    "chunks": 25,
+    "reasoning_chars": 251,
+    "content_chars": 6,
+    "prompt_tokens": 106127,
+    "completion_tokens": 79,
+    "cached_tokens": 105040,
+    "decode_tok_s": 60.53942293449564,
+    "spec": {
+     "drafts": 22.0,
+     "draft_tokens": 88.0,
+     "accepted_tokens": 59.0,
+     "accepted_per_pos": [
+      18.0,
+      15.0,
+      15.0
+     ],
+     "prefix_hits": 105040.0,
+     "prefix_queries": 106127.0,
+     "tokens_per_step": 3.6818181818181817,
+     "accept_pos_rate": [
+      0.8181818181818182,
+      0.6818181818181818,
+      0.6818181818181818
+     ]
+    },
+    "answer": "\n\n4417",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-summary",
+    "ok": true,
+    "ttft_s": 0.9792981899809092,
+    "total_s": 3.1888478179462254,
+    "chunks": 39,
+    "reasoning_chars": 558,
+    "content_chars": 41,
+    "prompt_tokens": 106125,
+    "completion_tokens": 115,
+    "cached_tokens": 105040,
+    "decode_tok_s": 52.04680562250996,
+    "spec": {
+     "drafts": 36.0,
+     "draft_tokens": 144.0,
+     "accepted_tokens": 82.0,
+     "accepted_per_pos": [
+      30.0,
+      20.0,
+      18.0
+     ],
+     "prefix_hits": 105040.0,
+     "prefix_queries": 106125.0,
+     "tokens_per_step": 3.2777777777777777,
+     "accept_pos_rate": [
+      0.8333333333333334,
+      0.5555555555555556,
+      0.5
+     ]
+    },
+    "answer": "\n\nAll audits passed with zero exceptions.",
+    "verified": true
+   },
+   {
+    "task": "ctx128k-needle-mid2",
+    "ok": true,
+    "ttft_s": 0.9737134519964457,
+    "total_s": 1.9984689539996907,
+    "chunks": 20,
+    "reasoning_chars": 199,
+    "content_chars": 20,
+    "prompt_tokens": 106127,
+    "completion_tokens": 47,
+    "cached_tokens": 105040,
+    "decode_tok_s": 45.86459883174276,
+    "spec": {
+     "drafts": 17.0,
+     "draft_tokens": 68.0,
+     "accepted_tokens": 33.0,
+     "accepted_per_pos": [
+      11.0,
+      9.0,
+      9.0
+     ],
+     "prefix_hits": 105040.0,
+     "prefix_queries": 106127.0,
+     "tokens_per_step": 2.9411764705882355,
+     "accept_pos_rate": [
+      0.6470588235294118,
+      0.5294117647058824,
+      0.5294117647058824
+     ]
+    },
+    "answer": "\n\nMeridian Logistics",
+    "verified": true
+   }
+  ],
+  "group_median": 57.70023892983374
+ }
+]

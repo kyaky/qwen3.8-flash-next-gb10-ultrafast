@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: Apache-2.0
+# iter7a: P2 stage-1a, adaptive-width controller in SHADOW mode (zero behavior
+# change; observes acceptance EMA and logs would-switch events). Wiring:
+# scheduler.py anchored patch (controller instantiation + per-request acceptance
+# feed + update_from_output flush) + the controller module at site-packages root.
+FROM qwen38-flash-dgx:iter6e-20261012
+
+ARG SP=/usr/local/lib/python3.12/dist-packages
+ARG SCHED=${SP}/vllm/v1/core/sched/scheduler.py
+
+COPY src/vllm_adaptive_width.py ${SP}/vllm_adaptive_width.py
+COPY src/patch_adaptive_width.py /tmp/patch_adaptive_width.py
+RUN cp ${SCHED} ${SCHED}.orig \
+ && python3 /tmp/patch_adaptive_width.py ${SCHED} \
+ && rm /tmp/patch_adaptive_width.py \
+ && python3 -c "import ast; ast.parse(open('${SCHED}').read()); print('adaptive width wired OK')"

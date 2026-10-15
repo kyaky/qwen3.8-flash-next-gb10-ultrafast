@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: Apache-2.0
+# iter7d: canonical within-group order for moe_align_block_size
+# (D-011 tie-flip fix, env-gated VLLM_MOE_ALIGN_STABLESORT=1).
+# Adds, on top of iter7c (P2 stage-1c armed wiring + DETHASH per-layer hash
+# hooks, which are kept unchanged - they are diagnostic):
+#   - patch_moe_align_stable.py patches the Marlin fused-MoE call site
+#     (fused_marlin_moe in vllm/model_executor/layers/fused_moe/experts/
+#     marlin_moe.py, the per-forward Marlin path): after moe_align_block_size
+#     returns (sorted_token_ids, expert_ids, num_tokens_post_padded), an
+#     env-gated helper sorts each expert group's contiguous segment of
+#     sorted_token_ids ascending by pair id. Root cause: the align kernel
+#     scatters each group's pairs with an atomicAdd on a per-expert cursor
+#     (csrc/moe/moe_align_sum_kernels.cu, _count_and_sort_expert_tokens), so
+#     the within-group arrival order is nondeterministic on bit-identical
+#     routing; the moe_wna16 Marlin kernel is sensitive to that cross-block
+#     pair placement (k-slice split) and flips bf16-boundary cells by 1 ULP.
+#     The align kernel pre-fills the whole buffer with the sentinel numel and
+#     writes each group's valid pair ids (all < numel) into the group's
+#     leading slots, so an ascending run-local sort only reorders valid ids
+#     inside their existing slot range: group membership, per-block expert
+#     ids and the padded length are unchanged, pure GPU ops, no host sync,
+#     CUDA-graph-replay safe. Upstream the fix is a one-line deterministic
+#     scatter (ordered insertion instead of the atomicAdd); this python shim
+#     is the local fix, the native fix is the upstream proposal.
+#   - the batched align kernel inserts sequentially (no atomicAdd) and needs
+#     no shim; the LoRA align path is not exercised by this stack.
+#   - pristine copy preserved as marlin_moe.py.orig-alignstable.
+# Numerics: a pure permutation of sorted_token_ids inside each expert group;
+# stock behavior unless VLLM_MOE_ALIGN_STABLESORT=1.
+FROM qwen38-flash-dgx:iter7c-20261014
+
+ARG SP=/usr/local/lib/python3.12/dist-packages
+ARG MM=${SP}/vllm/model_executor/layers/fused_moe/experts/marlin_moe.py
+
+COPY src/patch_moe_align_stable.py /tmp/patch_moe_align_stable.py
+RUN cp ${MM} ${MM}.orig-alignstable \
+ && python3 /tmp/patch_moe_align_stable.py ${SP} \
+ && rm /tmp/patch_moe_align_stable.py \
+ && python3 -c "import ast; ast.parse(open('${MM}').read()); print('moe-align-stable ast OK')"

@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: Apache-2.0
+# iter7f: P2 stage-1 closure instrumentation (D-014 conditions 1+2).
+# Adds, on top of iter7d (stage-1a/1c armed wiring + stage-1b six-file
+# chain + DETHASH hooks + the moe-align stable-sort shim, all kept
+# unchanged):
+#   - C2 emitter FIELD completion (the astra (b) design, round 8):
+#     awdbg1b_evidence.py gains the additive v2 fields -- worker: the
+#     executed draft-sampling branch, the execution-shape fingerprint
+#     (nt/pf), per-row effective draft temperature/seed/seed_set from the
+#     sampler's CPU mirrors and the per-row proposal token ids; sched:
+#     per-row rejection index, replacement/bonus token, committed token
+#     ids, the committed-prefix sha256 (prompt+output, incremental per
+#     request) and the semantic cache-state pair (ol/nct) plus the
+#     sampling params as scheduled. patch_c2_fields.py wires them into
+#     scheduler.py (verify/commit stashes + the post-append commit
+#     capture + the extended sched emitter call), autoregressive/
+#     speculator.py (the executed draft-sampling branch) and
+#     gpu/model_runner.py (the extended worker emitter call). All
+#     additive: an old-shape line stays parse-compatible; the harness
+#     reports MISSING_INSTRUMENT on absent fields, never a crash.
+#   - Runtime BEHAVIORAL fingerprints (D-014 condition 1):
+#     patch_fingerprints.py appends the qwen38-awfp block to marlin_moe.py
+#     (import-time CODE check: the two moe_wna16_marlin_gemm call sites
+#     hard-set the atomicAdd tail flag false -- the atomic_add=0 proof --
+#     and the stable-sort shim wiring) and wires awfp_fingerprint.py into
+#     gpu/model_runner.py: the load_model tail emits AWFP-CONFIG and runs
+#     the BEHAVIORAL shim probe (a crafted non-canonical input must come
+#     back canonical through the shim helper AND through the real
+#     moe_align_block_size + shim composition), and the scheduled-step
+#     gate emits the settled AWFP-POLICY record (triton autotune
+#     selections incl. the fla/GDN kernels, force-first-config state,
+#     inductor compile-cache entry count, cudagraph configured+captured
+#     sizes -> one policy_sha, compared against the previous boot's
+#     persisted record with an AWFP-DRIFT line on mismatch).
+#   - awdbg1b_evidence.py and awfp_fingerprint.py are (re)copied next to
+#     vllm in site-packages; the emitters stay gated by
+#     VLLM_SPECDBG_EVIDENCE=1, the fingerprints by VLLM_AWFP (default ON,
+#     0 opts out -- an opted-out boot is MISSING_INSTRUMENT to the gate).
+# Numerics: no model code path is altered. The C2 fields are host-side
+# reads plus one bounded GPU->host transfer per scheduled step under the
+# evidence gate; the probe launches a handful of tiny align-kernel calls
+# once per boot at load end (never inside a capture); the policy walk is
+# read-only.
+FROM qwen38-flash-dgx:iter7d-20261014
+
+ARG SP=/usr/local/lib/python3.12/dist-packages
+ARG SCHED=${SP}/vllm/v1/core/sched/scheduler.py
+ARG RUNNER=${SP}/vllm/v1/worker/gpu/model_runner.py
+ARG SPEC=${SP}/vllm/v1/worker/gpu/spec_decode/autoregressive/speculator.py
+ARG MM=${SP}/vllm/model_executor/layers/fused_moe/experts/marlin_moe.py
+
+COPY src/awdbg1b_evidence.py ${SP}/awdbg1b_evidence.py
+COPY src/awfp_fingerprint.py ${SP}/awfp_fingerprint.py
+COPY src/patch_c2_fields.py /tmp/patch_c2_fields.py
+COPY src/patch_fingerprints.py /tmp/patch_fingerprints.py
+# ORDER CONTRACT: patch_c2_fields.py anchors on the iter7d texts and
+# extends the C2 emitter call sites; patch_fingerprints.py anchors on the
+# end of the SAME worker-evidence block (untouched by patch_c2_fields) and
+# on the shim end marker inside marlin_moe.py. Each script's must_contain
+# guards make a wrong order or a wrong base fail the build loudly.
+RUN cp ${SCHED} ${SCHED}.orig-c2fp \
+ && cp ${RUNNER} ${RUNNER}.orig-c2fp \
+ && cp ${SPEC} ${SPEC}.orig-c2fp \
+ && cp ${MM} ${MM}.orig-awfp \
+ && python3 /tmp/patch_c2_fields.py ${SCHED} ${RUNNER} ${SPEC} \
+ && python3 /tmp/patch_fingerprints.py ${MM} ${RUNNER} \
+ && rm /tmp/patch_c2_fields.py /tmp/patch_fingerprints.py \
+ && python3 -c "import ast; [ast.parse(open(p).read()) for p in ('${SCHED}','${RUNNER}','${SPEC}','${MM}','${SP}/awdbg1b_evidence.py','${SP}/awfp_fingerprint.py')]; print('stage-1 closure instrumentation ast OK')"

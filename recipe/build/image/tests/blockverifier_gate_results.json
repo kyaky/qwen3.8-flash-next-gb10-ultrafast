@@ -1,0 +1,500 @@
+{
+  "meta": {
+    "torch": "2.13.0+cu130",
+    "triton": "3.7.1",
+    "vllm": "0.1.dev20073+g8e685d198",
+    "gpu": "NVIDIA GB10",
+    "host_python": "3.12.3",
+    "image": "qwen38-flash-dgx:iter7f-20261015",
+    "sha256:rejection_sampler.py": "40ac4a4f929eb047084ec64fc831caa6fe9df6d1bd940ae9ebe119dcce761756",
+    "sha256:rejection_sampler_utils.py": "659e82c2ce1249a6e614f7adf62e3824329a7b79e7a4caa55cfadf254068a98a",
+    "gate_spec": "R-031 kernel-level stochastic gate (astra task-mv8oapbk)"
+  },
+  "verdict": {
+    "gate_passed": true,
+    "failed_checks": [],
+    "controls_not_rejected": []
+  },
+  "rng": {
+    "acceptance_draw_bitexact": {
+      "ok": true,
+      "detail": {
+        "mismatches": 0,
+        "samples": 257
+      }
+    },
+    "gumbel_fp32_noise": {
+      "ok": true,
+      "detail": {
+        "mismatches": 0,
+        "samples": 16448
+      }
+    },
+    "gumbel_fp64_noise": {
+      "ok": true,
+      "detail": {
+        "mismatches": 0,
+        "samples": 16448
+      }
+    },
+    "_elapsed_s": 1.031
+  },
+  "exact": {
+    "K3_basic_T1": {
+      "ok": true,
+      "detail": {}
+    },
+    "K4_basic_T1": {
+      "ok": true,
+      "detail": {}
+    },
+    "K4_mixed_temps": {
+      "ok": true,
+      "detail": {}
+    },
+    "K4_cap_stress": {
+      "ok": true,
+      "detail": {}
+    },
+    "K4_partial_windows": {
+      "ok": true,
+      "detail": {}
+    },
+    "K3_fp64_gumbel": {
+      "ok": true,
+      "detail": {}
+    },
+    "V2500_multiblock": {
+      "ok": true,
+      "detail": {}
+    },
+    "rows_reordered": {
+      "ok": true,
+      "detail": {}
+    },
+    "rows_reused": {
+      "ok": true,
+      "detail": {}
+    },
+    "transition_K4": {
+      "ok": true,
+      "detail": {
+        "mismatches": [],
+        "num_sampled": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "min_resample_gumbel_margin": 0.10940957069396973
+      }
+    },
+    "transition_K3": {
+      "ok": true,
+      "detail": {
+        "mismatches": [],
+        "num_sampled": [
+          1,
+          3,
+          2,
+          1
+        ],
+        "min_resample_gumbel_margin": 0.18390727043151855
+      }
+    },
+    "transition_4_3_4": {
+      "ok": true,
+      "detail": {
+        "calls": [
+          {
+            "K": 4,
+            "ok": true,
+            "num_sampled": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "K": 3,
+            "ok": true,
+            "num_sampled": [
+              1,
+              3,
+              2,
+              1
+            ]
+          },
+          {
+            "K": 4,
+            "ok": true,
+            "num_sampled": [
+              1,
+              1,
+              1,
+              1
+            ]
+          }
+        ],
+        "note": "separate rejection_sample calls at K=4, K=3, K=4 with the same per-request seed stream and fresh windows"
+      }
+    },
+    "reject_every_position": {
+      "ok": true,
+      "detail": {
+        "mismatches": [],
+        "num_sampled": [
+          1,
+          1,
+          1
+        ],
+        "min_resample_gumbel_margin": null
+      }
+    },
+    "reject_every_position_L0": {
+      "ok": true,
+      "detail": {
+        "num_sampled": [
+          1,
+          1,
+          1
+        ],
+        "note": "forced rejection at every position -> committed = the single resampled token drawn from row-0 residual"
+      }
+    },
+    "full_accept_bonus": {
+      "ok": true,
+      "detail": {
+        "mismatches": [],
+        "num_sampled": [
+          4,
+          4,
+          4
+        ],
+        "min_resample_gumbel_margin": 3.3891191482543945
+      }
+    },
+    "full_accept_bonus_LK": {
+      "ok": true,
+      "detail": {
+        "num_sampled": [
+          4,
+          4,
+          4
+        ],
+        "note": "q == p -> full block accepted; bonus from the K-row"
+      }
+    },
+    "_elapsed_s": 5.946
+  },
+  "invariants": {
+    "cached_q_equals_proposal_dist": {
+      "ok": true,
+      "detail": {
+        "note": "cache rows bitwise-equal the q logits the proposals were sampled from (production write/read pair)"
+      }
+    },
+    "proposal_tokens_reproduced_from_cache": {
+      "ok": true,
+      "detail": {
+        "note": "every proposal token re-derived from the cached row via the recorded (seed, pos) gumbel draw"
+      }
+    },
+    "minus1_tail_equivalence": {
+      "ok": true,
+      "detail": {
+        "K4_2valid_plus_tail": [
+          [
+            9,
+            22
+          ],
+          [
+            2
+          ]
+        ],
+        "num_a": [
+          2,
+          1
+        ],
+        "K2_window": [
+          [
+            9,
+            22
+          ],
+          [
+            2
+          ]
+        ],
+        "num_b": [
+          2,
+          1
+        ],
+        "oracle_matches_K4": true,
+        "note": "invalid suffix contributes nothing: the K=4 window with a 2-valid prefix commits exactly the K=2 window's output (same seeds/positions/distributions); only committed prefixes are compared (later slots are uninitialized buffer memory by kernel design)"
+      }
+    },
+    "committed_counts_and_rollback": {
+      "ok": true,
+      "detail": {
+        "num_sampled": [
+          1,
+          3,
+          1,
+          1
+        ],
+        "num_rejected": [
+          3,
+          1,
+          3,
+          3
+        ],
+        "chunked_prefill_req0": {
+          "num_sampled": 0,
+          "num_rejected": 0
+        },
+        "note": "committed tokens = accepted prefix + resample; num_rejected = window suffix to roll back; chunked prefill zeroes the commit"
+      }
+    },
+    "greedy_independence": {
+      "ok": true,
+      "detail": {
+        "committed": [
+          [
+            [
+              3,
+              9,
+              1,
+              12
+            ],
+            [
+              3,
+              9,
+              1,
+              12
+            ],
+            [
+              3,
+              9,
+              1,
+              12
+            ]
+          ],
+          [
+            [
+              3,
+              9
+            ],
+            [
+              3,
+              9
+            ],
+            [
+              3,
+              9
+            ]
+          ],
+          [
+            [
+              3,
+              9,
+              1
+            ],
+            [
+              3,
+              9,
+              1
+            ],
+            [
+              3,
+              9,
+              1
+            ]
+          ]
+        ],
+        "note": "with a fixed greedy target the committed continuation is the same argmax chain regardless of proposals (full-accept, mismatch-at-1, -1-tail proposal sets)"
+      }
+    },
+    "_elapsed_s": 0.043
+  },
+  "statistical": {
+    "cap_event_distribution_exact": {
+      "ok": true,
+      "detail": {
+        "N": 120000,
+        "length_hist": [
+          0.451817,
+          0.224217,
+          0.323967
+        ],
+        "P_out1": [
+          0.5014,
+          0.4986
+        ],
+        "P_out2_given_out1_Lge1": [
+          [
+            0.501345,
+            0.498655
+          ],
+          [
+            0.500719,
+            0.499281
+          ]
+        ],
+        "extended_joint": [
+          [
+            0.250767,
+            0.250633
+          ],
+          [
+            0.249658,
+            0.248942
+          ]
+        ],
+        "z_marginal": 0.9699484522385413,
+        "z_conditional_max": 0.3515860953700366,
+        "z_extended_max": 0.8466666666666622,
+        "tv_extended": 0.0013999999999999707,
+        "counts": [
+          [
+            2983,
+            2967
+          ],
+          [
+            29959,
+            29873
+          ]
+        ]
+      }
+    },
+    "_elapsed_s": 0.397
+  },
+  "controls": {
+    "D007_honest_passes": {
+      "ok": true,
+      "detail": {
+        "N": 40000,
+        "P_out": [
+          0.5002,
+          0.4998
+        ],
+        "z_vs_target": 0.07999999999999119,
+        "cache_invariant_flagged": false
+      }
+    },
+    "D007_stale_rejected": {
+      "ok": true,
+      "detail": {
+        "N": 40000,
+        "P_out": [
+          0.90125,
+          0.09875
+        ],
+        "z_vs_target": 160.5,
+        "cache_invariant_flagged": true
+      }
+    },
+    "poisoned_tails_rejected": {
+      "ok": true,
+      "detail": {
+        "clean_layout_valid": true,
+        "poisoned_layout_flag": false,
+        "poisoned_flag_detail": [
+          0,
+          4,
+          "valid draft count 4 != expected_valid 2"
+        ],
+        "poisoned_output_differs_from_clean": true,
+        "defect_simulator_output_differs": true,
+        "clean": {
+          "num_sampled": [
+            3,
+            3
+          ]
+        },
+        "poisoned": {
+          "num_sampled": [
+            5,
+            5
+          ]
+        },
+        "note": "gate rejects valid-looking ids replacing the -1 pad: layout validator flags the spec violation; the outputs differ; and a defect simulator (treating -1 as valid) is distinguished from the pinned kernel"
+      }
+    },
+    "misaligned_width_rejected": {
+      "ok": true,
+      "detail": {
+        "requests": 24,
+        "h2_honest": 0.6249999965965607,
+        "h2_defected": 0.0,
+        "cache_invariant_flagged": 24,
+        "honest_kernel_matches_oracle": true,
+        "oracle_reproduces_defected_kernel": true,
+        "outputs_diverged": 24,
+        "honest_num_sampled": [
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4
+        ],
+        "defected_num_sampled": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        "note": "row start+3 remapped to a stale cache row: the cache-vs-proposal invariant fires for every request, the exact oracle reproduces the defected kernel, and every request's committed output flips (honest L=3 commits [g,g,g,g]; defected L=2 commits [g,g,h])"
+      }
+    },
+    "swapped_rows_rejected": {
+      "ok": true,
+      "detail": {
+        "honest_kernel_matches_oracle": true,
+        "swapped_output_differs": true,
+        "oracle_reproduces_swapped_kernel": true,
+        "note": "swapped expanded_idx_mapping: each request reads the other request's cache row/seed/temperature; the exact oracle and the cache invariant both flag it"
+      }
+    },
+    "_elapsed_s": 0.571
+  }
+}
