@@ -179,6 +179,8 @@ AutoRound INT4 experts + FP8 side layers + INT8 output head
 | [`docs/benchmarks/`](docs/benchmarks/) | Raw per-round JSON and boot fingerprints for every number in this README |
 | [`docs/`](docs/) | [Build](docs/BUILD.md), [configuration](docs/CONFIGURATION.md), [architecture](docs/ARCHITECTURE.md), [benchmarks](docs/BENCHMARKS.md), [evaluation](docs/EVALS.md) and [changelog](docs/CHANGELOG.md) |
 
+<p align="center"><a href="https://buymeacoffee.com/kyaky" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;"></a></p>
+
 ## Acknowledgements
 
 This project's design took shape against Restech Technology Services, UNSW's self-hosted high-performance inference infrastructure, and this project owes that service a direct debt: the GB10 hardware and the compute access that made the work possible at all came from there. Qwen3.8-flash-next-gb10-ultrafast is an independent project and is not affiliated with UNSW; the acknowledgement is where the lineage ends.
