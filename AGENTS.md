@@ -47,9 +47,9 @@ hostname; uname -m                          # expect aarch64
 nvidia-smi                                  # the GPU name should contain GB10
 free -g                                     # unified memory and what is available
 df -h "$HOME"                               # free disk for the model files
-docker --version
-docker info 2>&1 | grep -i -E 'runtimes|docker root dir|permission denied'
-docker ps -a --format '{{.Names}}\t{{.Image}}\t{{.Status}}'
+podman --version
+podman info 2>&1 | head -5
+podman ps -a --format '{{.Names}}\t{{.Image}}\t{{.Status}}'
 ls -ld "$HOME/models" "$HOME/qwen3.8-flash-next-gb10-ultrafast" 2>&1
 (ss -ltn 2>/dev/null || netstat -ltn 2>/dev/null) | grep ':8000 ' || echo 'port 8000 looks free'
 for t in git python3 jq md5sum sha256sum curl; do command -v "$t" >/dev/null || echo "missing: $t"; done
@@ -59,10 +59,10 @@ python3 -m venv --help >/dev/null 2>&1 || echo 'missing: python3 venv module'
 Stop and tell the person, without going further, if any of these holds:
 
 - The machine is not ARM64, or the GPU is not a GB10. This recipe targets GB10 only.
-- Docker is missing, the NVIDIA runtime is not listed, or `docker` needs `sudo` (a permission denied error). The person has to fix Docker access first.
+- Docker is missing, the NVIDIA runtime is not listed, or `podman info` errors. The person has to fix podman setup first (see the README Troubleshooting section).
 - Another model server or large process is already using the GPU or unified memory. With this recipe running, only about 16 GiB of the 121 GB stays free, so nothing else large can run beside it.
 - A container named `qwen38-flash` already exists, or port 8000 is in use. The launcher replaces a container with that name and publishes port 8000.
-- Under about 150 GB of disk is free for `$HOME/models`, or the Docker root directory is short on space. The downloads are about 130 GB, plus about 5 GB for the drafter directory and room for Docker images.
+- Under about 150 GB of disk is free for `$HOME/models`, or the container storage root is short on space. The downloads are about 130 GB, plus about 5 GB for the drafter directory and room for container images.
 - `$HOME/models` or the repository folder already exists with other content. Ask before using it.
 
 The model files must live in `$HOME/models`, because the launch settings point there. If `$HOME` lacks the space, the person can make `$HOME/models` a link to a larger disk themselves. Do not change the settings instead.
@@ -97,13 +97,13 @@ If it fails partway, show the log and ask before running it again. Re-running re
 
 ## Phase 3: build the image (approval, detached)
 
-Run this first and show the output. It lists the source and hash checks and the Docker commands:
+Run this first and show the output. It lists the source and hash checks and the container commands:
 
 ```bash
 bash recipe/build/image/build.sh --print
 ```
 
-Tell the person `--run` pulls a large public vLLM image and runs two local Docker builds and CPU test gates. After approval, run `bash recipe/build/image/build.sh --run` as a detached job. If any gate or hash check fails, stop.
+Tell the person `--run` pulls a large public vLLM image and runs two local Docker builds and CPU test gates. After approval, run `bash recipe/build/image/build.sh --run` as a detached job (the build scripts accept the podman CLI). If any gate or hash check fails, stop.
 
 ## Phase 4: build the drafter directory (approval, detached)
 
@@ -127,10 +127,10 @@ bash recipe/config/v16b/launch.sh --run
 Loading takes a while. Check readiness every minute with separate calls, for up to 30 minutes:
 
 ```bash
-curl -fsS -m 5 http://localhost:8000/v1/models >/dev/null && echo READY || docker logs --tail 20 qwen38-flash
+curl -fsS -m 5 http://localhost:8000/v1/models >/dev/null && echo READY || podman logs --tail 20 qwen38-flash
 ```
 
-Do not use `docker logs -f`, which never returns. Once it reports `READY`, send a test request:
+Do not use `podman logs -f`, which never returns. Once it reports `READY`, send a test request:
 
 ```bash
 curl -fsS -m 300 http://localhost:8000/v1/chat/completions \
@@ -138,7 +138,7 @@ curl -fsS -m 300 http://localhost:8000/v1/chat/completions \
   -d '{"model":"qwen","messages":[{"role":"user","content":"Reply with OK."}],"max_tokens":512}'
 ```
 
-A working setup answers with a normal completion. If the container exits, or it is not ready after 30 minutes, stop, show `docker logs --tail 50 qwen38-flash`, and ask.
+A working setup answers with a normal completion. If the container exits, or it is not ready after 30 minutes, stop, show `podman logs --tail 50 qwen38-flash`, and ask.
 
 ## Finish
 
@@ -149,9 +149,9 @@ Report in plain language:
 - How to stop or remove it:
 
 ```bash
-docker stop qwen38-flash                  # stop the server
-docker update --restart=no qwen38-flash   # do not restart it on reboot
-docker rm -f qwen38-flash                 # remove the container
+podman stop qwen38-flash                  # stop the server
+podman update --restart=no qwen38-flash 2>/dev/null || true   # do not restart it on reboot
+podman rm -f qwen38-flash                 # remove the container
 ```
 
 Mention that the benchmark scripts in `recipe/benchmarks/` reproduce the published numbers and that `docs/CONFIGURATION.md` explains every launch setting. Offer to run a benchmark, but do not start one without asking.

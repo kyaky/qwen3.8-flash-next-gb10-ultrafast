@@ -9,78 +9,23 @@ The promoted configuration, **v19a-w5** (MTP=4 window-5 on the deterministic flo
 
 **What this fork adds on top of the upstream recipes:**
 
-- **A verified-deterministic floor**: the MoE `moe_align_block_size` arrival-order shim plus the drafter-Marlin atomicAdd epilogue fix and the pinned triton config, with runtime behavioral fingerprints (AWFP) and a 37/37 kernel-level stochastic-correctness gate over the real GPU block verifier.
-- **A fixed suite-position tool-loop failure is recorded, not hidden**: `copy-agentic-1` fails at rep 2 on three independent W5 boots (attribution unresolved, reproduction queued), see [docs/benchmarks](docs/benchmarks).
-- **Owner-shaped benchmarks** (multi-turn tool loops and real file edits) alongside the copy/prose/code suite.
-- **+31.3% Chinese prose throughput** (34.8 → 45.7 tok/s at equal verified quality, MGSM 16/16, needle tests intact) from a rebalanced MTP draft vocabulary: 39.5% Han tokens in the 65,536-id draft vocab, built from a 48.7M-token mixed corpus. ~+20% sustained on the promoted configuration (41.7 tok/s; the W5 window trades ~3% back for the copy/code gains).
+- **W5 width promoted**: MTP=4 on the copy/code axis (+9.2% N1, +4.8% N8 over the MTP=3 reference, same floor).
+- **Chinese throughput +31.3%**: the draft vocabulary rebalanced from 182 to 25,862 Han ids (0.28% to 39.5% of the 65,536-id draft vocab), built from a 48.7M-token mixed corpus; prose-zhen 34.8 to 45.7 tok/s at equal verified quality, ~+20% sustained on the promoted window.
+- **A verified-deterministic floor**: the MoE `moe_align_block_size` arrival-order shim, the drafter-Marlin atomicAdd epilogue fix, the pinned triton config and the compile-cache mount, with runtime behavioral fingerprints (AWFP).
+- **Kernel-level stochastic-correctness gate, 37/37**: known conditional distributions through the real GPU block verifier against a bit-exact fp64 oracle, chained K=2/3/4 statistics, and five sensitivity controls that must be rejected.
+- **Owner-shaped benchmarks**: multi-turn tool loops and real file-edit suites with per-run verification, alongside the copy/prose/code suite.
+- **Every number ships with its raw per-round data and the script that measured it** ([docs/benchmarks](docs/benchmarks/)).
+- **A recorded failure, not a hidden one**: `copy-agentic-1` fails at rep 2 on three independent W5 boots (attribution unresolved, reproduction queued), see [docs/benchmarks](docs/benchmarks).
+
+**Headline: 76.8 tok/s single-stream, 261.2 tok/s aggregate at 8 concurrent streams on one DGX Spark, +4.6% over the stock baseline at every concurrency point. Full tables in [Results](#results) below.**
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-244d64) ![Hardware](https://img.shields.io/badge/hardware-GB10-244d64) ![Model](https://img.shields.io/badge/model-Qwen3.8--Flash--Next-244d64) ![vLLM](https://img.shields.io/badge/vLLM-0.1.dev20073-244d64) ![CUDA](https://img.shields.io/badge/CUDA-13.0-244d64)
 
-## Results
-
-### This fork, v19a-w5 (promoted) vs the MTP=3 reference vs the stock baseline, all on this machine, this bench
-
-v19a-w5/v19a-w4: same pinned image (iter7g), same floor (shim + MARLIN epilogue fix + pinned triton config + compile-cache mount), two boots per arm. Stock anchor: v16b exactly as the upstream recipe ships it (iter6d image, stock vocabulary, no floor fixes), booted and measured for this table. Window tok/s medians; per-round JSON in [docs/benchmarks](docs/benchmarks).
-
-| Streams | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| **v19a-w5 (MTP=4, promoted)** | **76.7** | 114.8 | 146.1 | 175.2 | 198.0 | 218.5 | 239.5 | **261.2** |
-| v19a-w4 (MTP=3, this floor) | 70.2 | 105.4 | 138.9 | 168.8 | 185.7 | 205.2 | 219.1 | 249.3 |
-| stock v16b (community baseline, as shipped) | 73.3 | 109.0 | 140.0 | 166.7 | 185.5 | 209.8 | 230.0 | 249.8 |
-| **v19a-w5 vs stock** | **+4.6%** | **+5.3%** | **+4.4%** | **+5.1%** | **+6.7%** | **+4.1%** | **+4.1%** | **+4.6%** |
-| v19a-w5 vs v19a-w4 | **+9.2%** | +8.9% | +5.2% | +3.8% | +6.6% | +6.5% | +9.3% | +4.8% |
-
-The promoted configuration beats the stock baseline at every concurrency point (+4.1% to +6.7%); the W4 reference is a wash against stock on the copy workload, its gains are in Chinese prose (below), which is the adaptive-width case in one table.
-
-Quality on the same boots: code-edit 61.8 vs 59.4 tok/s (25/25 verified both arms), MGSM 16/16 both arms, prose-zhen 41.7 vs 43.2 (the known W5 CJK deep-acceptance trade-off), ctx128k within the noise band. Chinese context: prose-zhen on this floor runs **+20% over the stock-vocabulary baseline** (34.8 tok/s), the full +31.3% lands on the W4-style window, with reasoning quality verified (MGSM zh 16/16).
-
-### Owner-shaped workloads (first live run on the promoted configuration)
-
-Multi-turn tool loops (10 scenarios × 5) and real file-edit tasks (5 tasks × 5, verified by executing the repo's tests), the agentic shape the recipe is tuned for: structured tool-argument emission dominates the generated tokens.
-
-| Suite | Runs | Verified | Median decode |
-|---|---:|---:|---:|
-| Multi-turn tool loops | 50 | 29 (first-run baseline; checker calibration pending) | **60.2 tok/s** |
-| Real file edits (test-verified) | 25 | **25/25** | **62.1 tok/s** | `copy-agentic-1` shows a recorded functional failure at rep 2 on three W5 boots (attribution unresolved).
-
-### Baseline reference (v16b)
-
-v16b on one GB10 with the promoted launch settings. Each throughput figure is the fastest of three rounds on a copy-heavy, low-effort workload with a shared 9,600-token cached prefix, counted as completion tokens per second over the window in which all streams are decoding. [Method and per-round data](docs/BENCHMARKS.md#measured-peak-rates).
-
-| Streams | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Peak aggregate decode, tok/s | **74.1** | 110.0 | 132.9 | 155.5 | 175.8 | 191.5 | 205.8 | **212.2** |
-
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/throughput-dark.svg"><img src="docs/assets/throughput-light.svg" alt="Measured peak copy-heavy decode throughput at one through eight streams" width="900"></picture></p>
-
-Cold prefill, with nothing cached, is 2× to 3.4× faster than the original recipe on the same GB10. Each rate is prompt tokens divided by cold time to first token, three repeats per cell, so it slightly understates pure prefill speed. [Method and data](docs/BENCHMARKS.md#cold-prefill).
-
-| Cold prompt | 16k | 64k | 128k |
-|---|---:|---:|---:|
-| v16b prefill, tok/s | **4,016** | **2,426** | **2,213** |
-| Original recipe prefill, tok/s | 1,171 | 1,071 | 1,065 |
-| Increase | **+243%** | **+127%** | **+108%** |
-
-| Measure | v16b | Conditions |
-|---|---:|---|
-| Decode step time | **52.33 ms** | Agent-shaped coding workload with thinking and tools; upstream base: 68.276 ms |
-| Emitted tokens per target step | **3.69** | Median, copy-heavy workload, one stream |
-| Time to first token, warm | **0.57 s** | Cached coding prompt |
-| Time to first token, cold | **27.0 s** | 64k-token prompt, three repeats |
-| Fixed-suite evaluation | **458/492** and **459/492** | 93.09% and 93.29%; seeds 20260908 and 20260910 |
-| Long generation | **21/24** and **22/24** | Two readings, 12,000-token cap |
-| Teacher-forced top-1 agreement delta | **−0.06 pp** | Pre-registered control band: 0.15 pp |
-| KV pool / configured context | **16 GB / 262,144 tokens** | Promoted launch settings |
-| Input | **Text, image and video** | The vision encoder is kept; checked with image and video requests on v16b |
-| Model residency / available memory | **~71 GiB / 16.5 GiB** | Base recipe residency / v16b capacity-run low-water |
-
-On the agent-shaped workload, v16b spends 23% less time per decode step than the upstream base, or 1.30× as many steps per second. [Benchmark method](docs/BENCHMARKS.md) · [Evaluation](docs/EVALS.md).
-
 ## Requirements
 
-- One NVIDIA GB10 with about 121 GB of unified memory, ARM64 Linux, Docker and the NVIDIA container runtime.
+- One NVIDIA GB10 with about 121 GB of unified memory, ARM64 Linux, and **rootless podman** (4.x works; the Troubleshooting section covers its quirks) with the NVIDIA container toolkit installed for CDI generation.
 - A driver compatible with the pinned CUDA 13.0 image. Check `nvidia-smi` and a GPU container before building.
-- Local storage, preferably NVMe, for the checkpoint, FP8 PLE table, downloads and Docker layers (about 130 GB free for the upstream checkpoint and table), plus about 4.8 GiB for the T80 drafter shard data.
+- Local storage, preferably NVMe, for the checkpoint, FP8 PLE table, downloads and container storage (about 130 GB free for the upstream checkpoint and table), plus about 4.8 GiB for the T80 drafter shard data.
 - Python 3, the Hugging Face `hf` CLI, `jq`, GNU `md5sum` and `sha256sum`.
 
 ## Quick start
@@ -139,6 +84,71 @@ Follow startup with `docker logs -f qwen38-flash`. The server exposes an OpenAI-
 
 > **Running on your own GB10?** If the recipe helped, a ⭐ helps other Spark owners find it, and your numbers are welcome as a benchmark submission.
 
+## Results
+
+### This fork, v19a-w5 (promoted) vs the MTP=3 reference vs the stock baseline, all on this machine, this bench
+
+Measured on one GB10 (sm_121) on the iter7g floor (shim + MARLIN epilogue fix + pinned triton config + compile-cache mount), **two boots per arm, three rounds per stream count**; figures quoted are boot-matched medians unless stated. Stock anchor: v16b exactly as the upstream recipe ships it (iter6d image, stock vocabulary, no floor fixes). Per-round JSON and boot fingerprints in [docs/benchmarks](docs/benchmarks).
+
+| Streams | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| **v19a-w5 (MTP=4, promoted)** | **76.7** | 114.8 | 146.1 | 175.2 | 198.0 | 218.5 | 239.5 | **261.2** |
+| v19a-w4 (MTP=3, this floor) | 70.2 | 105.4 | 138.9 | 168.8 | 185.7 | 205.2 | 219.1 | 249.3 |
+| stock v16b (community baseline, as shipped) | 73.3 | 109.0 | 140.0 | 166.7 | 185.5 | 209.8 | 230.0 | 249.8 |
+| **v19a-w5 vs stock** | **+4.6%** | **+5.3%** | **+4.4%** | **+5.1%** | **+6.7%** | **+4.1%** | **+4.1%** | **+4.6%** |
+| v19a-w5 vs v19a-w4 | **+9.2%** | +8.9% | +5.2% | +3.8% | +6.6% | +6.5% | +9.3% | +4.8% |
+| v19a-w5 peak (best round) | 76.8 | 117.7 | 147.0 | 179.9 | 199.8 | 224.1 | 242.9 | **265.9** |
+
+Cross-boot spread: N1 <0.3%; N3 up to +5.8% (146.1 to 154.6); the N8 headline is quoted in all three accountings (+4.79% boot-matched, +8.43% boot2-matched, +6.58% median-of-medians).
+
+The promoted configuration beats the stock baseline at every concurrency point (+4.1% to +6.7%); the W4 reference is a wash against stock on the copy workload, its gains are in Chinese prose (below), which is the adaptive-width case in one table.
+
+Quality on the same boots: code-edit 61.8 vs 59.4 tok/s (25/25 verified both arms), MGSM 16/16 both arms, prose-zhen 41.7 vs 43.2 (the known W5 CJK deep-acceptance trade-off), ctx128k within the noise band. Chinese context: prose-zhen on this floor runs **+20% over the stock-vocabulary baseline** (34.8 tok/s), the full +31.3% lands on the W4-style window, with reasoning quality verified (MGSM zh 16/16).
+
+### Owner-shaped workloads (first live run on the promoted configuration)
+
+Multi-turn tool loops (10 scenarios × 5) and real file-edit tasks (5 tasks × 5, verified by executing the repo's tests), the agentic shape the recipe is tuned for: structured tool-argument emission dominates the generated tokens.
+
+| Suite | Runs | Verified | Median decode | Conditions |
+|---|---:|---:|---:|---|
+| Multi-turn tool loops | 50 (10 scenarios x 5) | 29 | **60.2 tok/s** | multi-turn tool loop, temp 1.0, streaming tool_calls, 12-turn cap |
+| Real file edits (test-verified) | 25 (5 tasks x 5) | **25/25** | **62.1 tok/s** | real file-edit tasks, semantic-test verification, 7-file fixture |
+
+The 29/50 is a first-round baseline with validator calibration pending and two turn-cap scenario failures, an observation rather than an acceptance gate. The kernel-level gate's criteria: marginal/cascade z<=5, TV<=0.04, length deviation<=0.006 across K=2/3/4 chained cap-event configs. One functional flake is recorded: `copy-agentic-1` failed at rep 2 on all three measured W5 boots (W4: 0/30, Fisher p~0.49); attribution is unresolved and a stateful reproduction is queued. `copy-agentic-1` shows a recorded functional failure at rep 2 on three W5 boots (attribution unresolved).
+
+### Baseline reference (the v16b line, upstream's promoted configuration; the cold-prefill and fixed-suite figures below are measured on the v16b line and are not yet re-measured on v19a-w5)
+
+v16b on one GB10 with the promoted launch settings. Each throughput figure is the fastest of three rounds on a copy-heavy, low-effort workload with a shared 9,600-token cached prefix, counted as completion tokens per second over the window in which all streams are decoding. [Method and per-round data](docs/BENCHMARKS.md#measured-peak-rates).
+
+| Streams | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Peak aggregate decode, tok/s | **74.1** | 110.0 | 132.9 | 155.5 | 175.8 | 191.5 | 205.8 | **212.2** |
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/throughput-dark.svg"><img src="docs/assets/throughput-light.svg" alt="Measured peak copy-heavy decode throughput at one through eight streams" width="900"></picture></p>
+
+Cold prefill, with nothing cached, is 2× to 3.4× faster than the original recipe on the same GB10. Each rate is prompt tokens divided by cold time to first token, three repeats per cell, so it slightly understates pure prefill speed. [Method and data](docs/BENCHMARKS.md#cold-prefill).
+
+| Cold prompt | 16k | 64k | 128k |
+|---|---:|---:|---:|
+| v16b prefill, tok/s | **4,016** | **2,426** | **2,213** |
+| Original recipe prefill, tok/s | 1,171 | 1,071 | 1,065 |
+| Increase | **+243%** | **+127%** | **+108%** |
+
+| Measure | v16b | Conditions |
+|---|---:|---|
+| Decode step time | **52.33 ms** | Agent-shaped coding workload with thinking and tools; upstream base: 68.276 ms |
+| Emitted tokens per target step | **3.69** | Median, copy-heavy workload, one stream |
+| Time to first token, warm | **0.57 s** | Cached coding prompt |
+| Time to first token, cold | **27.0 s** | 64k-token prompt, three repeats |
+| Fixed-suite evaluation | **458/492** and **459/492** | 93.09% and 93.29%; seeds 20260908 and 20260910 |
+| Long generation | **21/24** and **22/24** | Two readings, 12,000-token cap |
+| Teacher-forced top-1 agreement delta | **−0.06 pp** | Pre-registered control band: 0.15 pp |
+| KV pool / configured context | **16 GB / 262,144 tokens** | Promoted launch settings |
+| Input | **Text, image and video** | The vision encoder is kept; checked with image and video requests on v16b |
+| Model residency / available memory | **~71 GiB / 16.5 GiB** | Base recipe residency / v16b capacity-run low-water |
+
+On the agent-shaped workload, v16b spends 23% less time per decode step than the upstream base, or 1.30× as many steps per second. [Benchmark method](docs/BENCHMARKS.md) · [Evaluation](docs/EVALS.md).
+
 ## Configuration
 
 The promoted launch, **v19a-w5**, pins `GPU_MEM=0.01`, `KV_BYTES=16g`, `SEQS=8`, `CTX=262144`, **MTP depth 4** (the W5 window), block rejection with probabilistic draft sampling, the mixed 39.5%-Han draft vocabulary, and prefix caching, on the deterministic floor: the MoE arrival-order shim, the drafter-Marlin epilogue fix, the pinned triton config and the compile-cache mount (all set in [`recipe/config/v19a-w5/env`](recipe/config/v19a-w5/env)). `launch.sh` sources that env file under a cleared environment, so edit the file rather than exporting variables. Changing any pinned value produces a new variant whose speed and quality must be measured separately; the MTP=3 reference (v19a-w4) and the upstream-stock configuration (v16b) ship alongside it. [Configuration reference](docs/CONFIGURATION.md).
@@ -182,6 +192,20 @@ AutoRound INT4 experts + FP8 side layers + INT8 output head
 | [`recipe/benchmarks/`](recipe/benchmarks/) | Stream-curve, agent-shaped and standalone decode benchmark scripts |
 | [`docs/benchmarks/`](docs/benchmarks/) | Raw per-round JSON and boot fingerprints for every number in this README |
 | [`docs/`](docs/) | [Build](docs/BUILD.md), [configuration](docs/CONFIGURATION.md), [architecture](docs/ARCHITECTURE.md), [benchmarks](docs/BENCHMARKS.md), [evaluation](docs/EVALS.md) and [changelog](docs/CHANGELOG.md) |
+
+## Troubleshooting
+
+Rootless podman notes (each hit live during the conversion):
+
+- **podman <5 with nvidia-ctk >= 1.20**: the generated CDI spec carries an `additionalGids` field that podman 4.x's parser rejects ("unresolvable CDI devices"). Strip it: `sudo sh -c 'sed "/additionalGids/d" /etc/cdi/nvidia.yaml > /etc/cdi/nvidia-fixed.yaml && mv /etc/cdi/nvidia-fixed.yaml /etc/cdi/nvidia.yaml'`, or upgrade to podman 5.
+- **`--shm-size` with `--ipc=host` is rejected** by podman; drop the flag and the host's `/dev/shm` (61 GB here) serves the container.
+- **The image's `/root` is not writable rootless** (image files are owned by host uid 0): mount a user-owned directory over it (`-v "$HOME/gb10-podman-root:/root"`), or vLLM's registry subprocess fails writing its cache.
+- **triton cannot find the mounted driver library**: triton reads `/sbin/ldconfig -p`, which is stale inside the image for runtime-mounted libs. Pass `TRITON_LIBCUDA_PATH=<dir-with-libcuda>` (wired in the launch scripts).
+- **The driver-library set must include the PTX JIT compiler** (`libnvidia-ptxjitcompiler.so.1`) plus nvvm/allocator/cfg, or the engine init fails with "PTX JIT compiler library not found" the first time a kernel needs JIT compilation. The launch scripts mount the full set.
+
+- **podman <5 with nvidia-ctk >= 1.20**: the generated CDI spec carries an `additionalGids` field that podman 4.x's parser rejects ("unresolvable CDI devices"). Strip it: `sudo sh -c 'sed "/additionalGids/d" /etc/cdi/nvidia.yaml > /etc/cdi/nvidia-fixed.yaml && mv /etc/cdi/nvidia-fixed.yaml /etc/cdi/nvidia.yaml'`, or upgrade to podman 5.
+- **cached_tokens reports zeros below one block**: on this hybrid architecture the prefix-cache accounting is granular to the 1,600-token mamba-aligned block; prompts shorter than one block always report cached 0 even when serving reuses them.
+- **First verify window keeps its own proposal width**: a request's first speculative window runs at its own first-proposal width (one-step lag), not the launch width; the gate harness asserts this (S1/S6) and it is expected behavior, not a defect.
 
 <p align="center"><a href="https://buymeacoffee.com/kyaky" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;"></a></p>
 

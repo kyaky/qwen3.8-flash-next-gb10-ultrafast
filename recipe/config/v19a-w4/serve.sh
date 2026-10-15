@@ -151,8 +151,18 @@ if [ -n "${KEEP_DRAFT_BLOCKS:-}" ];  then IT6_ARGS+=(-e "VLLM_KEEP_DRAFT_BLOCKS=
 # The four flag strings below intentionally expand into separate argv words;
 # the promoted env supplies fixed, whitespace-separated flags.
 # shellcheck disable=SC2206
-DOCKER_RUN=(docker run -d --name "$NAME" --restart unless-stopped \
-  --gpus all --ipc=host --shm-size 16g -p "${PORT}:8000" \
+DRIVER_LIB_DIR=$(dirname "$(ldconfig -p | grep -m1 'libcuda\.so\.1' | awk '{print $NF}')")
+PODMAN_RUN=(podman run -d --name "$NAME" \
+  --device /dev/nvidia0 --device /dev/nvidiactl --device /dev/nvidia-uvm \
+  -v "$DRIVER_LIB_DIR/libcuda.so.1:$DRIVER_LIB_DIR/libcuda.so.1:ro" \
+  -v "$DRIVER_LIB_DIR/libnvidia-ml.so.1:$DRIVER_LIB_DIR/libnvidia-ml.so.1:ro" \
+  -v "$DRIVER_LIB_DIR/libnvidia-ptxjitcompiler.so.1:$DRIVER_LIB_DIR/libnvidia-ptxjitcompiler.so.1:ro" \
+  -v "$DRIVER_LIB_DIR/libnvidia-nvvm.so.4:$DRIVER_LIB_DIR/libnvidia-nvvm.so.4:ro" \
+  -v "$DRIVER_LIB_DIR/libnvidia-allocator.so.1:$DRIVER_LIB_DIR/libnvidia-allocator.so.1:ro" \
+  -v "$DRIVER_LIB_DIR/libnvidia-cfg.so.1:$DRIVER_LIB_DIR/libnvidia-cfg.so.1:ro" \
+  --userns=keep-id -v "$HOME/gb10-podman-root:/root" --ipc=host -p "${PORT}:8000" \
+  -e "TRITON_LIBCUDA_PATH=$DRIVER_LIB_DIR" \
+
   -v "$MODEL_DIR:/model:ro" -v "$TABLE_DIR:/ple-table:ro" \
   -e VLLM_PLE_MMAP=1 -e VLLM_PLE_MMAP_WORKERS="${WORKERS:-32}" -e VLLM_PLE_MMAP_PREWARM="$PREWARM" -e VLLM_PLE_MMAP_PREFETCH="${PLE_PREFETCH:-0}" \
   -e VLLM_PLE_MMAP_MADV_RANDOM="${PLE_MADV_RANDOM:-0}" \
@@ -188,13 +198,13 @@ DOCKER_RUN=(docker run -d --name "$NAME" --restart unless-stopped \
 
 [ $# -le 1 ] || { echo "serve.sh: too many arguments" >&2; exit 64; }
 case "${1:-}" in
-  --print) printf '%q\n' "${DOCKER_RUN[@]}"; exit 0 ;;
+  --print) printf '%q\n' "${PODMAN_RUN[@]}"; exit 0 ;;
   "") ;;
   *) echo "serve.sh: unknown argument '$1'" >&2; exit 64 ;;
 esac
 
-docker rm -f "$NAME" >/dev/null 2>&1 || true
-"${DOCKER_RUN[@]}"
+podman rm -f "$NAME" >/dev/null 2>&1 || true
+"${PODMAN_RUN[@]}"
 
 echo ">> $NAME starting on :$PORT (ctx $CTX, mtp=$MTP, seqs=$SEQS, gpu_mem=$GPU_MEM)"
-echo ">> follow with: docker logs -f $NAME"
+echo ">> follow with: podman logs -f $NAME"
