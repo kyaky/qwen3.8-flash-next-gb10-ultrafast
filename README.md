@@ -28,7 +28,16 @@ Same pinned image (iter7g), same floor (shim + MARLIN epilogue fix + pinned trit
 | v19a-w4 (MTP=3) | 70.2 | 105.4 | 138.9 | 168.8 | 185.7 | 205.2 | 219.1 | 249.3 |
 | Δ | **+9.2%** | +8.9% | +5.2% | +3.8% | +6.6% | +6.5% | +9.3% | +4.8% |
 
-Quality on the same boots: code-edit 61.8 vs 59.4 tok/s (25/25 verified both arms), MGSM 16/16 both arms, prose-zhen 41.7 vs 43.2 (the known W5 CJK deep-acceptance trade-off), ctx128k within the noise band. Chinese context: prose-zhen on this floor runs **+20% over the stock-vocabulary baseline** (34.8 tok/s), the full +31.3% lands on the W4-style window, with reasoning quality verified (MGSM zh 16/16). `copy-agentic-1` shows a recorded functional failure at rep 2 on three W5 boots (attribution unresolved).
+Quality on the same boots: code-edit 61.8 vs 59.4 tok/s (25/25 verified both arms), MGSM 16/16 both arms, prose-zhen 41.7 vs 43.2 (the known W5 CJK deep-acceptance trade-off), ctx128k within the noise band. Chinese context: prose-zhen on this floor runs **+20% over the stock-vocabulary baseline** (34.8 tok/s), the full +31.3% lands on the W4-style window, with reasoning quality verified (MGSM zh 16/16).
+
+### Owner-shaped workloads (first live run on the promoted configuration)
+
+Multi-turn tool loops (10 scenarios × 5) and real file-edit tasks (5 tasks × 5, verified by executing the repo's tests), the agentic shape the recipe is tuned for: structured tool-argument emission dominates the generated tokens.
+
+| Suite | Runs | Verified | Median decode |
+|---|---:|---:|---:|
+| Multi-turn tool loops | 50 | 29 (first-run baseline; checker calibration pending) | **60.2 tok/s** |
+| Real file edits (test-verified) | 25 | **25/25** | **62.1 tok/s** | `copy-agentic-1` shows a recorded functional failure at rep 2 on three W5 boots (attribution unresolved).
 
 ### Baseline reference (v16b)
 
