@@ -164,6 +164,10 @@ AutoRound INT4 experts + FP8 side layers + INT8 output head
 | [`recipe/benchmarks/`](recipe/benchmarks/) | Stream-curve, agent-shaped and standalone decode benchmark scripts |
 | [`docs/`](docs/) | [Build](docs/BUILD.md), [configuration](docs/CONFIGURATION.md), [architecture](docs/ARCHITECTURE.md), [benchmarks](docs/BENCHMARKS.md), [evaluation](docs/EVALS.md), [changelog](docs/CHANGELOG.md) and [result tables](docs/results/) |
 
+## Acknowledgements
+
+This project's design took shape against Restech Technology Services, UNSW's self-hosted high-performance inference infrastructure, and this project owes that service a direct debt: the GB10 hardware and the compute access that made the work possible at all came from there. Qwen3.8-flash-next-gb10-ultrafast is an independent project and is not affiliated with UNSW; the acknowledgement is where the lineage ends.
+
 ## Credits and licenses
 
 The Qwen model authors and the vLLM, Intel AutoRound and FlashInfer contributors. Model weights and downloaded datasets keep their own terms.
