@@ -40,7 +40,7 @@ Read AGENTS.md in this repository and follow it exactly.
 Ask me how to reach the GB10, run the read-only checks, show me what you found, and get my approval before you install, download, build or launch anything.
 ```
 
-The agent first checks the GB10's hardware, memory, disk, Docker and port 8000 without changing anything. It then asks for your approval before each of five steps: getting the repository and tools, downloading about 130 GB of public model files, building the image, building the drafter directory, and launching the server. Long steps run in the background on the GB10, so a dropped connection doesn't interrupt them. The agent never stops or removes anything that was already running. [AGENTS.md](AGENTS.md) has the full instructions.
+The agent first checks the GB10's hardware, memory, disk, container runtime and port 8000 without changing anything. It then asks for your approval before each of five steps: getting the repository and tools, downloading about 130 GB of public model files, building the image, building the drafter directory, and launching the server. Long steps run in the background on the GB10, so a dropped connection doesn't interrupt them. The agent never stops or removes anything that was already running. [AGENTS.md](AGENTS.md) has the full instructions.
 
 ### Manual
 
@@ -69,7 +69,7 @@ bash recipe/build/image/build.sh --run
 bash recipe/build/image/build-iter7g.sh --run
 bash recipe/build/model/build.sh --run
 
-# Show the full docker command, then start the promoted server (runs detached)
+# Show the full container command, then start the promoted server (runs detached)
 bash recipe/config/v19a-w5/launch.sh --print
 bash recipe/config/v19a-w5/launch.sh --run
 
