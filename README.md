@@ -12,6 +12,7 @@ The promoted configuration, **v19a-w5** (MTP=4 window-5 on the deterministic flo
 - **A verified-deterministic floor**: the MoE `moe_align_block_size` arrival-order shim plus the drafter-Marlin atomicAdd epilogue fix and the pinned triton config, with runtime behavioral fingerprints (AWFP) and a 37/37 kernel-level stochastic-correctness gate over the real GPU block verifier.
 - **A fixed suite-position tool-loop failure is recorded, not hidden**: `copy-agentic-1` fails at rep 2 on three independent W5 boots (attribution unresolved, reproduction queued), see [docs/benchmarks](docs/benchmarks).
 - **Owner-shaped benchmarks** (multi-turn tool loops and real file edits) alongside the copy/prose/code suite.
+- **+31.3% Chinese prose throughput** (34.8 → 45.7 tok/s at equal verified quality, MGSM 16/16, needle tests intact) from a rebalanced MTP draft vocabulary: 39.5% Han tokens in the 65,536-id draft vocab, built from a 48.7M-token mixed corpus. ~+20% sustained on the promoted configuration (41.7 tok/s; the W5 window trades ~3% back for the copy/code gains).
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-244d64) ![Hardware](https://img.shields.io/badge/hardware-GB10-244d64) ![Model](https://img.shields.io/badge/model-Qwen3.8--Flash--Next-244d64) ![vLLM](https://img.shields.io/badge/vLLM-0.1.dev20073-244d64) ![CUDA](https://img.shields.io/badge/CUDA-13.0-244d64)
 
@@ -27,7 +28,7 @@ Same pinned image (iter7g), same floor (shim + MARLIN epilogue fix + pinned trit
 | v19a-w4 (MTP=3) | 70.2 | 105.4 | 138.9 | 168.8 | 185.7 | 205.2 | 219.1 | 249.3 |
 | Δ | **+9.2%** | +8.9% | +5.2% | +3.8% | +6.6% | +6.5% | +9.3% | +4.8% |
 
-Quality on the same boots: code-edit 61.8 vs 59.4 tok/s (25/25 verified both arms), MGSM 16/16 both arms, prose-zhen 41.7 vs 43.2 (the known W5 CJK deep-acceptance trade-off), ctx128k within the noise band. `copy-agentic-1` shows a recorded functional failure at rep 2 on three W5 boots (attribution unresolved).
+Quality on the same boots: code-edit 61.8 vs 59.4 tok/s (25/25 verified both arms), MGSM 16/16 both arms, prose-zhen 41.7 vs 43.2 (the known W5 CJK deep-acceptance trade-off), ctx128k within the noise band. Chinese context: prose-zhen on this floor runs **+20% over the stock-vocabulary baseline** (34.8 tok/s), the full +31.3% lands on the W4-style window, with reasoning quality verified (MGSM zh 16/16). `copy-agentic-1` shows a recorded functional failure at rep 2 on three W5 boots (attribution unresolved).
 
 ### Baseline reference (v16b)
 
