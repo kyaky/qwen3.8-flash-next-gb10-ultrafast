@@ -18,15 +18,19 @@ The promoted configuration, **v19a-w5** (MTP=4 window-5 on the deterministic flo
 
 ## Results
 
-### This fork, v19a-w5 (promoted) and v19a-w4, measured head-to-head
+### This fork, v19a-w5 (promoted) vs the MTP=3 reference vs the stock baseline, all on this machine, this bench
 
-Same pinned image (iter7g), same floor (shim + MARLIN epilogue fix + pinned triton config + compile-cache mount), two boots per arm, temperature-1.0 copy-heavy workload. Window tok/s medians; per-round JSON in [docs/benchmarks](docs/benchmarks).
+v19a-w5/v19a-w4: same pinned image (iter7g), same floor (shim + MARLIN epilogue fix + pinned triton config + compile-cache mount), two boots per arm. Stock anchor: v16b exactly as the upstream recipe ships it (iter6d image, stock vocabulary, no floor fixes), booted and measured for this table. Window tok/s medians; per-round JSON in [docs/benchmarks](docs/benchmarks).
 
 | Streams | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| **v19a-w5 (MTP=4)** | **76.7** | 114.8 | 146.1 | 175.2 | 198.0 | 218.5 | 239.5 | **261.2** |
-| v19a-w4 (MTP=3) | 70.2 | 105.4 | 138.9 | 168.8 | 185.7 | 205.2 | 219.1 | 249.3 |
-| Δ | **+9.2%** | +8.9% | +5.2% | +3.8% | +6.6% | +6.5% | +9.3% | +4.8% |
+| **v19a-w5 (MTP=4, promoted)** | **76.7** | 114.8 | 146.1 | 175.2 | 198.0 | 218.5 | 239.5 | **261.2** |
+| v19a-w4 (MTP=3, this floor) | 70.2 | 105.4 | 138.9 | 168.8 | 185.7 | 205.2 | 219.1 | 249.3 |
+| stock v16b (community baseline, as shipped) | 73.3 | 109.0 | 140.0 | 166.7 | 185.5 | 209.8 | 230.0 | 249.8 |
+| **v19a-w5 vs stock** | **+4.6%** | **+5.3%** | **+4.4%** | **+5.1%** | **+6.7%** | **+4.1%** | **+4.1%** | **+4.6%** |
+| v19a-w5 vs v19a-w4 | **+9.2%** | +8.9% | +5.2% | +3.8% | +6.6% | +6.5% | +9.3% | +4.8% |
+
+The promoted configuration beats the stock baseline at every concurrency point (+4.1% to +6.7%); the W4 reference is a wash against stock on the copy workload, its gains are in Chinese prose (below), which is the adaptive-width case in one table.
 
 Quality on the same boots: code-edit 61.8 vs 59.4 tok/s (25/25 verified both arms), MGSM 16/16 both arms, prose-zhen 41.7 vs 43.2 (the known W5 CJK deep-acceptance trade-off), ctx128k within the noise band. Chinese context: prose-zhen on this floor runs **+20% over the stock-vocabulary baseline** (34.8 tok/s), the full +31.3% lands on the W4-style window, with reasoning quality verified (MGSM zh 16/16).
 
