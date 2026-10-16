@@ -15,7 +15,7 @@ The promoted configuration, **v19a-w5** (MTP=4 window-5 on the deterministic flo
 - **Kernel-level stochastic-correctness gate, 37/37**: known conditional distributions through the real GPU block verifier against a bit-exact fp64 oracle, chained K=2/3/4 statistics, and five sensitivity controls that must be rejected.
 - **Owner-shaped benchmarks**: multi-turn tool loops and real file-edit suites with per-run verification, alongside the copy/prose/code suite.
 - **Every number ships with its raw per-round data and the script that measured it** ([docs/benchmarks](docs/benchmarks/)).
-- **A recorded failure, not a hidden one**: `copy-agentic-1` fails at rep 2 on three independent W5 boots (attribution unresolved, reproduction queued), see [docs/benchmarks](docs/benchmarks).
+- **A recorded failure, not a hidden one**: `copy-agentic-1` fails at rep 2 on three independent W5 boots (attribution unresolved; a stateful reproduction with the prose predecessor replayed did not reproduce it on a rootless-podman instance), see [docs/benchmarks](docs/benchmarks).
 
 | Spec | Value |
 |---|---|
@@ -25,7 +25,7 @@ The promoted configuration, **v19a-w5** (MTP=4 window-5 on the deterministic flo
 | Decoding | MTP=4 block verification: 76.8 tok/s single-stream, 261.2 tok/s at 8 streams |
 | Floor | iter7g: MoE align shim + drafter-Marlin fix + pinned triton config + compile-cache mount |
 
-**Headline: 76.8 tok/s single-stream, 261.2 tok/s aggregate at 8 concurrent streams on one DGX Spark, +4.6% over the stock baseline at every concurrency point. Full tables in [Results](#results) below.**
+**Headline: 76.8 tok/s single-stream, 261.2 tok/s aggregate at 8 concurrent streams on one DGX Spark, +4.1% to +6.7% over the stock baseline at every concurrency point. Full tables in [Results](#results) below.**
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-244d64) ![Hardware](https://img.shields.io/badge/hardware-GB10-244d64) ![Model](https://img.shields.io/badge/model-Qwen3.8--Flash--Next-244d64) ![vLLM](https://img.shields.io/badge/vLLM-0.1.dev20073-244d64) ![CUDA](https://img.shields.io/badge/CUDA-13.0-244d64)
 
@@ -71,8 +71,10 @@ hf download Saren/Qwen3.8-Flash-Next-ple-table-fp8 \
   --revision 50511b0a41aa1d34b8beb7e5d4bb06a0b650dc14 \
   --local-dir "$HOME/models/ple-table-fp8"
 
-# Build the base image, the verification-gate image (iter7g), then the
-# T80 dense-MTP drafter directory
+# Build the pinned base image (iter7d), the patch-chain images up to the
+# verification-gate image (iter7g), then the T80 dense-MTP drafter directory.
+# The build scripts drive the container CLI (podman on this recipe's
+# validated path; the docker CLI also works via the podman-docker shim).
 bash recipe/build/image/build.sh --run
 bash recipe/build/image/build-iter7g.sh --run
 bash recipe/build/model/build.sh --run
@@ -124,7 +126,7 @@ Multi-turn tool loops (10 scenarios × 5) and real file-edit tasks (5 tasks × 5
 | Multi-turn tool loops | 50 (10 scenarios x 5) | 29 | **60.2 tok/s** | multi-turn tool loop, temp 1.0, streaming tool_calls, 12-turn cap |
 | Real file edits (test-verified) | 25 (5 tasks x 5) | **25/25** | **62.1 tok/s** | real file-edit tasks, semantic-test verification, 7-file fixture |
 
-The 29/50 is a first-round baseline, an observation rather than an acceptance gate. The calibrated failure taxonomy: four scenarios fail deterministically (0/5 each) and split into two classes, two looping scenarios (the model does not converge and hits the 12-turn cap: 18 and 19 tool calls against expected 4 and 6) and two content-adherence scenarios (a required tag dropped; a rollback field off-spec); the other five scenarios pass 5/5 with zero malformed tool arguments across all 50 runs. The kernel-level gate's criteria: marginal/cascade z<=5, TV<=0.04, length deviation<=0.006 across K=2/3/4 chained cap-event configs. One functional flake is recorded: `copy-agentic-1` failed at rep 2 on all three measured W5 boots (W4: 0/30, Fisher p~0.49); a stateful reproduction with the prose predecessor replayed did not reproduce it on a rootless-podman instance, so the remaining variables are the code-edit predecessor, the serving runtime and the boot-instance class. `copy-agentic-1` shows a recorded functional failure at rep 2 on three W5 boots (attribution unresolved).
+The 29/50 is a first-round baseline, an observation rather than an acceptance gate. The calibrated failure taxonomy: three scenarios fail every run (0/5 each) and one passes 4/5. The failures split into two looping scenarios (the model does not converge: 18 and 19 tool calls against expected 4 and 6; the turn cap fires in 3 of 5 runs on one and 5 of 5 on the other) and two content-adherence scenarios (a required tag dropped; a rollback configuration whose keys the tool schema did not document, now fixed in the schema). The other five scenarios pass 5/5 with zero malformed tool arguments across all 50 runs. The kernel-level gate's criteria: marginal/cascade z<=5, TV<=0.04, length deviation<=0.006 across K=2/3/4 chained cap-event configs. One functional flake is recorded: `copy-agentic-1` failed at rep 2 on all three measured W5 boots (W4: 0/30, Fisher p~0.49); a stateful reproduction with the prose predecessor replayed did not reproduce it on a rootless-podman instance, so the remaining variables are the code-edit predecessor, the serving runtime and the boot-instance class. `copy-agentic-1` shows a recorded functional failure at rep 2 on three W5 boots (attribution unresolved).
 
 ### Baseline reference (the v16b line, upstream's promoted configuration; the cold-prefill and fixed-suite figures below are measured on the v16b line and are not yet re-measured on v19a-w5)
 
