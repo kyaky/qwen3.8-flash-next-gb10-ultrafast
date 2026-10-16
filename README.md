@@ -101,6 +101,8 @@ Measured on one GB10 (sm_121) on the iter7g floor (shim + MARLIN epilogue fix + 
 
 Cross-boot spread: N1 <0.3%; N3 up to +5.8% (146.1 to 154.6); the N8 headline is quoted in all three accountings (+4.79% boot-matched, +8.43% boot2-matched, +6.58% median-of-medians).
 
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/throughput-dark.svg"><img src="docs/assets/throughput-light.svg" alt="Measured peak copy-heavy decode throughput at one through eight streams" width="900"></picture></p>
+
 The promoted configuration beats the stock baseline at every concurrency point (+4.1% to +6.7%); the W4 reference is a wash against stock on the copy workload, its gains are in Chinese prose (below), which is the adaptive-width case in one table.
 
 Quality on the same boots: code-edit 61.8 vs 59.4 tok/s (25/25 verified both arms), MGSM 16/16 both arms, prose-zhen 41.7 vs 43.2 (the known W5 CJK deep-acceptance trade-off), ctx128k within the noise band. Chinese context: prose-zhen on this floor runs **+20% over the stock-vocabulary baseline** (34.8 tok/s), the full +31.3% lands on the W4-style window, with reasoning quality verified (MGSM zh 16/16).
@@ -118,13 +120,11 @@ The 29/50 is a first-round baseline with validator calibration pending and two t
 
 ### Baseline reference (the v16b line, upstream's promoted configuration; the cold-prefill and fixed-suite figures below are measured on the v16b line and are not yet re-measured on v19a-w5)
 
-v16b on one GB10 with the promoted launch settings. Each throughput figure is the fastest of three rounds on a copy-heavy, low-effort workload with a shared 9,600-token cached prefix, counted as completion tokens per second over the window in which all streams are decoding. [Method and per-round data](docs/BENCHMARKS.md#measured-peak-rates).
+v16b with its own launch settings, as the upstream recipe ships it. Each throughput figure is the fastest of three rounds on a copy-heavy, low-effort workload with a shared 9,600-token cached prefix, counted as completion tokens per second over the window in which all streams are decoding. [Method and per-round data](docs/BENCHMARKS.md#measured-peak-rates).
 
 | Streams | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | Peak aggregate decode, tok/s | **74.1** | 110.0 | 132.9 | 155.5 | 175.8 | 191.5 | 205.8 | **212.2** |
-
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/throughput-dark.svg"><img src="docs/assets/throughput-light.svg" alt="Measured peak copy-heavy decode throughput at one through eight streams" width="900"></picture></p>
 
 Cold prefill, with nothing cached, is 2× to 3.4× faster than the original recipe on the same GB10. Each rate is prompt tokens divided by cold time to first token, three repeats per cell, so it slightly understates pure prefill speed. [Method and data](docs/BENCHMARKS.md#cold-prefill).
 
@@ -219,7 +219,6 @@ The Qwen model authors and the vLLM, Intel AutoRound and FlashInfer contributors
 
 Everything in this repository, code, docs, data and images, is licensed under **Apache-2.0**. You can use, modify and redistribute it, including commercially. See [LICENSE](LICENSE).
 
-GitHub's "Cite this repository" menu reads [CITATION.cff](CITATION.cff).
 
 
 
