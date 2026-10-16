@@ -17,6 +17,14 @@ The promoted configuration, **v19a-w5** (MTP=4 window-5 on the deterministic flo
 - **Every number ships with its raw per-round data and the script that measured it** ([docs/benchmarks](docs/benchmarks/)).
 - **A recorded failure, not a hidden one**: `copy-agentic-1` fails at rep 2 on three independent W5 boots (attribution unresolved, reproduction queued), see [docs/benchmarks](docs/benchmarks).
 
+| Spec | Value |
+|---|---|
+| Model | Qwen3.8-Flash-Next (125B MoE, 51B n-gram PLE table on NVMe-mmap) |
+| Quantization | W4A16-AutoRound hybrid: INT4 experts + FP8 side layers + INT8 head |
+| Context | 262,144 tokens (16 GB KV pool) |
+| Decoding | MTP=4 block verification: 76.8 tok/s single-stream, 261.2 tok/s at 8 streams |
+| Floor | iter7g: MoE align shim + drafter-Marlin fix + pinned triton config + compile-cache mount |
+
 **Headline: 76.8 tok/s single-stream, 261.2 tok/s aggregate at 8 concurrent streams on one DGX Spark, +4.6% over the stock baseline at every concurrency point. Full tables in [Results](#results) below.**
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-244d64) ![Hardware](https://img.shields.io/badge/hardware-GB10-244d64) ![Model](https://img.shields.io/badge/model-Qwen3.8--Flash--Next-244d64) ![vLLM](https://img.shields.io/badge/vLLM-0.1.dev20073-244d64) ![CUDA](https://img.shields.io/badge/CUDA-13.0-244d64)
