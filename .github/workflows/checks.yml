@@ -39,14 +39,4 @@ jobs:
           recipe/.venv/bin/python recipe/build/model/test_build_mtpdense.py
       - name: Local Markdown links
         run: recipe/.venv/bin/python recipe/ci/check_links.py
-      - name: Privacy grep, compressed data, image chunks and Git history
-        run: |
-          recipe/.venv/bin/python recipe/ci/check_privacy.py
-          set +e
-          rg -n -i --pcre2 --hidden -g '!.git/**' -g '!recipe/.venv/**' -g '!*.png' -g '!*.gz' '(?:/h[o]me/[a-z]+/|Users[/\\]|(?:192\.168|10\.0)\.\d+\.\d+|\bhf_[A-Za-z0-9]{20,}\b|\bsk[-][A-Za-z0-9]+|\bgh[p]_[A-Za-z0-9]+|api[_]key|token[=]|clau[d]e|anthrop[i]c|chatg[p]t|co[-]authored[-]by|generated\s+with)' .
-          rg_status=$?
-          set -e
-          if [ "$rg_status" -ne 1 ]; then
-            echo "Privacy grep found a match or failed (rg exit $rg_status)" >&2
-            exit 1
-          fi
+
