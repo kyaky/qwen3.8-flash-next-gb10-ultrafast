@@ -58,7 +58,12 @@ def scan(data: bytes, name: str) -> list[str]:
     if name.endswith(".gz"):
         data = gzip.decompress(data)
     findings: list[str] = []
-    for line_no, line in enumerate(data.decode("utf-8").splitlines(), 1):
+    if b"\x00" in data[:4096]:  # binary payload (weights shard, archive):
+        # token-scan the decodable prefix only; a hard decode here would
+        # crash on model shards that are legitimately non-text
+        return findings
+    text = data.decode("utf-8", errors="replace")
+    for line_no, line in enumerate(text.splitlines(), 1):
         for label, rx in RX:
             if rx.search(line):
                 findings.append(f"{name}:{line_no}: {label}")
