@@ -1,5 +1,5 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
-<p align="center"><img src="docs/assets/hero-banner.svg" alt="Qwen3.8 Flash-Next · GB10 UltraFast banner: 76.8 tok/s single-stream and 263 tok/s aggregate on one DGX Spark" width="100%"></p>
+<p align="center"><img src="docs/assets/hero-banner-v8.png" alt="Qwen3.8 Flash-Next · GB10 UltraFast banner: a DGX Spark silhouette with cyan and magenta light exhaust, 76.8 tok/s single-stream and 265.9 tok/s aggregate on one DGX Spark" width="100%"></p>
 
 # Qwen3.8 Flash-Next · GB10 UltraFast
 
