@@ -3,7 +3,7 @@
 
 ## Licensing change
 
-The whole repository is now licensed under Apache-2.0, matching the upstream recipe. The earlier noncommercial terms on original scripts, docs, data and images no longer apply. Attribution is kept through the root [NOTICE](../NOTICE) file.
+The whole repository is now licensed under Apache-2.0, matching the upstream recipe. The earlier noncommercial terms on original scripts, docs, data and images no longer apply. Attribution is kept through the root [NOTICE](NOTICE) file.
 
 ## v16b, promoted configuration
 
