@@ -20,8 +20,6 @@ All eight levels use the same copy-heavy, low-effort workload, three rounds each
 
 The five-stream anchor was measured in **both** sessions: the first had **174.87 tok/s peak / 170.12 tok/s median** across three rounds, and the extension had **175.78 tok/s peak / 168.98 tok/s median** across three rounds. The peak difference was **0.5%** and the median difference **0.7%**. The published five-stream peak is the higher measured round, **175.78 tok/s**. Across both sessions, all **27 rounds** completed; tokens per speculative step ranged **3.65-3.94**. At eight streams, the measured gain over seven was **3.1%**, meeting the pre-registered level-off rule; eight is the configured `max_num_seqs`.
 
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/throughput-dark.svg"><img src="assets/throughput-light.svg" alt="Peak copy-heavy decode throughput at one through eight streams" width="900"></picture></p>
-
 ## Agent-shaped decode
 
 The coding benchmark used a cached long system prefix, tool schemas, six coding tasks, three repeats per task and 1,500 generated tokens, with thinking enabled. The v16b candidate window measured **52.33 ms per decode step**. The interleaved original, v13 and v15 windows measured 68.276, 67.167 and 55.65 ms respectively.
@@ -32,8 +30,6 @@ The coding benchmark used a cached long system prefix, tool schemas, six coding 
 | v13 | 67.167 |
 | v15 | 55.65 |
 | v16b | **52.33** |
-
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/speed-ladder-dark.svg"><img src="assets/speed-ladder-light.svg" alt="Measured decode step time by recipe" width="900"></picture></p>
 
 ## Stream count and time to first token
 
