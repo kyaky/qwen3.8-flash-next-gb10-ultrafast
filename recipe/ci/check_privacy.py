@@ -68,6 +68,8 @@ def scan(data: bytes, name: str) -> list[str]:
             if rx.search(line):
                 findings.append(f"{name}:{line_no}: {label}")
         for ip in IPV4.findall(line):
+            if ip == "0.0.0.0" or ip.startswith("127.") or ip == "255.255.255.255":
+                continue  # bind/listen addresses and loopback are not leaks
             if ip == SHELLCHECK_VERSION and "shellcheck-py==" in line:
                 continue
             if ip != WILDCARD_BIND or name not in ALLOWED_BIND:
