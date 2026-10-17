@@ -476,7 +476,7 @@ def sample_proposals_via_cache(case, rows, q_logits, base_positions,
 
 
 def fill_window(case, req, draft_tokens_row, base_pos, valid_len=None,
-                first_token=7, state_row=None):
+                lead_token_id=7, state_row=None):
     K = case.K
     start = req * (K + 1)
     valid_len = K if valid_len is None else valid_len

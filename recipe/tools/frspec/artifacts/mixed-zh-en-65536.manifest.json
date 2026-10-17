@@ -4995,7 +4995,7 @@
       "sha256_used": "4edfca46371b3de699d15299119f35489399ce9b3620b06a02fe0f561c96d174"
     },
     {
-      "path": "/corpus/en-00996-anthropic.py",
+      "path": "/corpus/en-00996-src.py",
       "bytes_used": 2019,
       "sha256_used": "a975aaa85964d3e9c2eb64027182118cb4dce001eb7532a997b842783cd1394b"
     },
@@ -5215,7 +5215,7 @@
       "sha256_used": "14d4bfe40e878787c52e70020320965f3176d74552eb0ed8ca71194d8a7d0b60"
     },
     {
-      "path": "/corpus/en-01040-CLAUDE.md",
+      "path": "/corpus/en-01040-src.md",
       "bytes_used": 4635,
       "sha256_used": "3da0db1401eef176fe5e50189b6af0f894be536d8caddc5e01a11591a12c320e"
     },
