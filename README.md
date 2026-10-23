@@ -5,11 +5,12 @@
 
 A vLLM serving recipe for Qwen3.8-Flash-Next on a single NVIDIA DGX Spark or other GB10 system.
 
-The promoted configuration, **v19a-w5** (MTP=4 window-5 on the deterministic floor), decodes a copy-heavy workload at up to **76.8 tok/s** on one stream and **265.9 tok/s** aggregate across eight concurrent streams, **+9.2% (+6.4 tok/s) over the same floor at MTP=3**, measured head-to-head on the same pinned image with two boots per arm (medians and per-boot spreads in [docs/benchmarks](docs/benchmarks)). The speed still comes from MTP speculative decoding with block rejection, not lower-bit target weights.
+The promoted serving line is **v20-fp8** (fp8 KV cache over a 24 GB pool at the native 262,144-token context on the deterministic floor). The fp8 pool normalizes to **1,291,120 KV tokens (4.93x single-request concurrency at the full context)**, and the line passed the registered quality-gate validation on the promoted boot (MGSM 16/16, tool loops 20/20, verified file edits 5/5, long-context needles 12/12, agent loops at their registered baseline form); its disclosures, the fork-phenomenon monitoring class and the deferred 1M path, are in [Configuration](#configuration). The published throughput record below remains the **v19a-w5** measurement (MTP=4 window-5, bf16 16g pool): up to **76.8 tok/s** on one stream and **265.9 tok/s** aggregate across eight concurrent streams, **+9.2% (+6.4 tok/s) over the same floor at MTP=3**, measured head-to-head on the same pinned image with two boots per arm (medians and per-boot spreads in [docs/benchmarks](docs/benchmarks)); the fp8 line's own stream-curve re-measurement is pending and will be published against the same protocol. The speed still comes from MTP speculative decoding with block rejection, not lower-bit target weights.
 
 **What this fork adds on top of the upstream recipes:**
 
 - **W5 width promoted**: MTP=4 on the copy/code axis (+9.2% N1, +4.8% N8 over the MTP=3 reference, same floor).
+- **A promoted fp8 KV line (v20-fp8)**: the KV cache at fp8 over a 24 GB pool at native 262k, 1,291,120-token capacity (1.715x the same pool at bf16), with the recorded fork-phenomenon class managed under a standing per-boot signature monitor ([Configuration](#configuration)).
 - **Chinese throughput +31.3%**: the draft vocabulary rebalanced from 182 to 25,862 Han ids (0.28% to 39.5% of the 65,536-id draft vocab), built from a 48.7M-token mixed corpus; prose-zhen 34.8 to 45.7 tok/s at equal verified quality, ~+20% sustained on the promoted window.
 - **A verified-deterministic floor**: the MoE `moe_align_block_size` arrival-order shim, the drafter-Marlin atomicAdd epilogue fix, the pinned triton config and the compile-cache mount, with runtime behavioral fingerprints (AWFP).
 - **Kernel-level stochastic-correctness gate, 37/37**: known conditional distributions through the real GPU block verifier against a bit-exact fp64 oracle, chained K=2/3/4 statistics, and five sensitivity controls that must be rejected.
@@ -21,11 +22,11 @@ The promoted configuration, **v19a-w5** (MTP=4 window-5 on the deterministic flo
 |---|---|
 | Model | Qwen3.8-Flash-Next (125B MoE, 51B n-gram PLE table on NVMe-mmap) |
 | Quantization | W4A16-AutoRound hybrid: INT4 experts + FP8 side layers + INT8 head |
-| Context | 262,144 tokens (16 GB KV pool) |
-| Decoding | MTP=4 block verification: 76.8 tok/s single-stream, 261.2 tok/s at 8 streams |
-| Floor | iter7g: MoE align shim + drafter-Marlin fix + pinned triton config + compile-cache mount |
+| Context | 262,144 tokens native (24 GB fp8 KV pool, 1,291,120-token capacity on the promoted line) |
+| Decoding | MTP=4 block verification: 76.8 tok/s single-stream, 261.2 tok/s at 8 streams (the bf16 v19a-w5 measurement) |
+| Floor | iter7g: MoE align shim + drafter-Marlin fix + pinned triton config + compile-cache mount; the promoted image adds the fp8 KV read path and the #59528 backport |
 
-**Headline: 76.8 tok/s single-stream, 261.2 tok/s aggregate at 8 concurrent streams on one DGX Spark, +4.1% to +6.7% over the stock baseline at every concurrency point. Full tables in [Results](#results) below.**
+**Headline: 76.8 tok/s single-stream, 261.2 tok/s aggregate at 8 concurrent streams on one DGX Spark, +4.1% to +6.7% over the stock baseline at every concurrency point (the bf16 v19a-w5 measurement; the promoted v20-fp8 line's re-measurement is pending). Full tables in [Results](#results) below.**
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-244d64) ![Hardware](https://img.shields.io/badge/hardware-GB10-244d64) ![Model](https://img.shields.io/badge/model-Qwen3.8--Flash--Next-244d64) ![vLLM](https://img.shields.io/badge/vLLM-0.1.dev20073-244d64) ![CUDA](https://img.shields.io/badge/CUDA-13.0-244d64)
 
@@ -52,7 +53,7 @@ The agent first checks the GB10's hardware, memory, disk, container runtime and 
 
 ### Manual
 
-Download the pinned public checkpoint and PLE table, build the image and the T80 drafter directory, then launch v16b and send a test request. [BUILD.md](docs/BUILD.md) has the reference hashes, build report and what each step checks.
+Download the pinned public checkpoint and PLE table, build the image and the T80 drafter directory, then launch v19a-w5 and send a test request. [BUILD.md](docs/BUILD.md) has the reference hashes, build report and what each step checks.
 
 ```bash
 # Clone and install the Hugging Face CLI
@@ -79,7 +80,11 @@ bash recipe/build/image/build.sh --run
 bash recipe/build/image/build-iter7g.sh --run
 bash recipe/build/model/build.sh --run
 
-# Show the full container command, then start the promoted server (runs detached)
+# Show the full container command, then start the v19a-w5 server (runs
+# detached): the line this repository's build chain produces end to end,
+# and the line every published number measures. The promoted v20-fp8
+# fp8 line runs on the promotion image, whose build path ships with the
+# next image-chain release (Configuration below).
 bash recipe/config/v19a-w5/launch.sh --print
 bash recipe/config/v19a-w5/launch.sh --run
 
@@ -90,19 +95,19 @@ curl -fsS http://localhost:8000/v1/chat/completions \
   -d '{"model":"qwen","messages":[{"role":"user","content":"Reply with OK."}],"max_tokens":512}'
 ```
 
-Follow startup with `podman logs -f qwen38-flash`. The server exposes an OpenAI-compatible API on port 8000 under the model name `qwen`. It accepts text, images (`image_url`) and video (`video_url`), since the recipe keeps the model's vision encoder. Audio input is not supported. The T80 builder converts nine drafter modules at group size 32; its reference conversion took 4.626 s after download and wrote 5,118,048,680 new bytes.
+Follow startup with `podman logs -f qwen38-flash`. The server exposes an OpenAI-compatible API on port 8000 under the model name `qwen`. It accepts text, images (`image_url`) and video (`video_url`), since the recipe keeps the model's vision encoder. Audio input is not supported. The T80 builder converts nine drafter modules at group size 32; its reference conversion took 4.626 s after download and wrote 5,118,048,680 new bytes. The promoted serving line is v20-fp8, the fp8 KV pool documented under [Configuration](#configuration); this quick start launches v19a-w5 because the promotion image is not yet built by the repository's build chain, and v19a-w5 is the line every published number measures.
 
 > **Running on your own GB10?** If the recipe helped, a ⭐ helps other Spark owners find it, and your numbers are welcome as a benchmark submission.
 
 ## Results
 
-### This fork, v19a-w5 (promoted) vs the MTP=3 reference vs the stock baseline, all on this machine, this bench
+### This fork, v19a-w5 (the measured line of record) vs the MTP=3 reference vs the stock baseline, all on this machine, this bench
 
 Measured on one GB10 (sm_121) on the iter7g floor (shim + MARLIN epilogue fix + pinned triton config + compile-cache mount), **two boots per arm, three rounds per stream count**; figures quoted are boot-matched medians unless stated. Stock anchor: v16b exactly as the upstream recipe ships it (iter6d image, stock vocabulary, no floor fixes). Per-round JSON and boot fingerprints in [docs/benchmarks](docs/benchmarks).
 
 | Streams | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| **v19a-w5 (MTP=4, promoted)** | **76.7** | 114.8 | 146.1 | 175.2 | 198.0 | 218.5 | 239.5 | **261.2** |
+| **v19a-w5 (MTP=4, bf16 16g)** | **76.7** | 114.8 | 146.1 | 175.2 | 198.0 | 218.5 | 239.5 | **261.2** |
 | v19a-w4 (MTP=3, this floor) | 70.2 | 105.4 | 138.9 | 168.8 | 185.7 | 205.2 | 219.1 | 249.3 |
 | stock v16b (community baseline, as shipped) | 73.3 | 109.0 | 140.0 | 166.7 | 185.5 | 209.8 | 230.0 | 249.8 |
 | **v19a-w5 vs stock** | **+4.6%** | **+5.3%** | **+4.4%** | **+5.1%** | **+6.7%** | **+4.1%** | **+4.1%** | **+4.6%** |
@@ -113,11 +118,11 @@ Cross-boot spread: N1 <0.3%; N3 up to +5.8% (146.1 to 154.6); the N8 headline is
 
 <p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/throughput-dark.svg"><img src="docs/assets/throughput-light.svg" alt="Measured peak copy-heavy decode throughput at one through eight streams" width="900"></picture></p>
 
-The promoted configuration beats the stock baseline at every concurrency point (+4.1% to +6.7%); the W4 reference is a wash against stock on the copy workload, its gains are in Chinese prose (below), which is the adaptive-width case in one table.
+v19a-w5 beats the stock baseline at every concurrency point (+4.1% to +6.7%); the W4 reference is a wash against stock on the copy workload, its gains are in Chinese prose (below), which is the adaptive-width case in one table.
 
 Quality on the same boots: code-edit 61.8 vs 59.4 tok/s (25/25 verified both arms), MGSM 16/16 both arms, prose-zhen 41.7 vs 43.2 (the known W5 CJK deep-acceptance trade-off), ctx128k within the noise band. Chinese context: prose-zhen on this floor runs **+20% over the stock-vocabulary baseline** (34.8 tok/s), the full +31.3% lands on the W4-style window, with reasoning quality verified (MGSM zh 16/16).
 
-### Owner-shaped workloads (first live run on the promoted configuration)
+### Owner-shaped workloads (first live run on the v19a-w5 configuration)
 
 Multi-turn tool loops (10 scenarios × 5) and real file-edit tasks (5 tasks × 5, verified by executing the repo's tests), the agentic shape the recipe is tuned for: structured tool-argument emission dominates the generated tokens.
 
@@ -155,7 +160,7 @@ Cold prefill, with nothing cached, is 2× to 3.4× faster than the original reci
 | Fixed-suite evaluation | **458/492** and **459/492** | 93.09% and 93.29%; seeds 20260908 and 20260910 |
 | Long generation | **21/24** and **22/24** | Two readings, 12,000-token cap |
 | Teacher-forced top-1 agreement delta | **−0.06 pp** | Pre-registered control band: 0.15 pp |
-| KV pool / configured context | **16 GB / 262,144 tokens** | Promoted launch settings |
+| KV pool / configured context | **16 GB / 262,144 tokens** | v16b launch settings |
 | Input | **Text, image and video** | The vision encoder is kept; checked with image and video requests on v16b |
 | Model residency / available memory | **~71 GiB / 16.5 GiB** | Base recipe residency / v16b capacity-run low-water |
 
@@ -163,7 +168,17 @@ On the agent-shaped workload, v16b spends 23% less time per decode step than the
 
 ## Configuration
 
-The promoted launch, **v19a-w5**, pins `GPU_MEM=0.01`, `KV_BYTES=16g`, `SEQS=8`, `CTX=262144`, **MTP depth 4** (the W5 window), block rejection with probabilistic draft sampling, the mixed 39.5%-Han draft vocabulary, and prefix caching, on the deterministic floor: the MoE arrival-order shim, the drafter-Marlin epilogue fix, the pinned triton config and the compile-cache mount (all set in [`recipe/config/v19a-w5/env`](recipe/config/v19a-w5/env)). `launch.sh` sources that env file under a cleared environment, so edit the file rather than exporting variables. Changing any pinned value produces a new variant whose speed and quality must be measured separately; the MTP=3 reference (v19a-w4) and the upstream-stock configuration (v16b) ship alongside it. [Configuration reference](docs/CONFIGURATION.md).
+The promoted launch, **v20-fp8**, pins `GPU_MEM=0.01`, `KV_BYTES=24g` with `--kv-cache-dtype fp8`, `SEQS=8`, `CTX=262144` native, **MTP depth 4** (the W5 window), block rejection with probabilistic draft sampling, the mixed 39.5%-Han draft vocabulary, prefix caching, and **`--no-async-scheduling`**, on the deterministic floor: the MoE arrival-order shim, the drafter-Marlin epilogue fix, the pinned triton config and the compile-cache mount (all set in [`recipe/config/v20-fp8/env`](recipe/config/v20-fp8/env)). `launch.sh` sources that env file under a cleared environment, so edit the file rather than exporting variables. Changing any pinned value produces a new variant whose speed and quality must be measured separately; the MTP=3 reference (v19a-w4), the upstream-stock configuration (v16b) and the measured bf16 line of record (v19a-w5, the 16g pool behind every published throughput number) ship alongside it. [Configuration reference](docs/CONFIGURATION.md).
+
+The v20-fp8 image is the fp8 promotion image, `qwen38-flash-dgx:fp8kv-promo-20261024`: the iter7g base plus exactly a three-file delta, the fp8 KV read path and the #59528 null-block backport. The repository's public build chain ([recipe/build/image](recipe/build/image/)) currently builds through iter7g, and the promotion image's build path ships with the next image-chain release; until then `launch.sh` refuses to start (exit 66) when the image is absent, and the quick start above stays on v19a-w5, which the chain builds end to end.
+
+**Capacity.** The 24 GB fp8 pool normalizes to **1,291,120 KV tokens** at the native 262,144-token context, a maximum single-request concurrency of **4.93x** (boot-validated on the promoted line), 1.715x the 752,966 tokens the same pool holds at bf16.
+
+**The fork-phenomenon monitoring note.** The fp8 KV read path carries a recorded serving-fork phenomenon class: on the adjudication campaign a fixed image forked in 15 of 20 fp8 boots against 0 of 20 bf16 boots (Fisher p=7.7e-7), the read-path non-determinism mechanism itself is unresolved (kernel execution level), and the fp8 read path carries no byte-exactness clearance (the campaign's byte-exactness verdict is demoted by the same record). The class is managed, not hidden: it sits in the standing R-061 signature-monitoring class, and every boot of this line runs the registered per-boot signature probe before it is put to work, the content tripwire plus the calibration triplet and its margin capture, with the block-0 probe and the hwmon guard behind it. The monitoring convention ships in the config ([`recipe/config/v20-fp8/MONITORING.md`](recipe/config/v20-fp8/MONITORING.md)). The bf16 line (v19a-w5) has no recorded instance.
+
+**The async-scheduling closure.** The pinned engine auto-resolves async scheduling ON for this exact configuration, which activates the recorded #53919 race class by default; the promoted line passes `--no-async-scheduling` explicitly, and the boot record shows `async_scheduling: False` in-process.
+
+**The 1M path status: deferred.** The fp8 pool is the only feasible route to a 1,000,000-token single request on this hardware; the enablement itself stays deferred pending workload demand or a release decision (the archived traffic shows no above-100k-token demand, and the YaRN context rungs are a release-capability decision, not something this recipe ships).
 
 ## How it works
 
@@ -178,11 +193,11 @@ AutoRound INT4 experts + FP8 side layers + INT8 output head
                 vLLM verifier and sampler → response
 ```
 
-**Target precision.** AutoRound W4A16 packs the routed-expert weights to four bits with 16-bit activations. FP8 side layers and an INT8 output head keep the nonexpert paths at eight bits, where 3-bit GGUF and NVFP4 recipes compress target weights further. The FP8 PLE table is memory-mapped from storage rather than held entirely in GPU memory, which leaves room for the 16 GB KV pool.
+**Target precision.** AutoRound W4A16 packs the routed-expert weights to four bits with 16-bit activations. FP8 side layers and an INT8 output head keep the nonexpert paths at eight bits, where 3-bit GGUF and NVFP4 recipes compress target weights further. The FP8 PLE table is memory-mapped from storage rather than held entirely in GPU memory, which leaves room for the KV pool (16 GB at bf16 on the measured line; 24 GB at fp8 on the promoted line).
 
-**Drafting.** The dense T80 MTP drafter proposes three to four tokens per step (the promoted v19a-w5 runs the W5 window; the verification width adapts per step on the armed configuration). A 65,536-id draft vocabulary, rebalanced to 39.5% Han tokens for the Chinese gains above, and FP8 drafter experts make each proposal cheaper. The target verifies every drafted token with block rejection, so the drafter changes speed, not the output distribution. Unlike n-gram copy speculation, which needs a matching earlier span, the MTP head drafts from the model itself and also covers original code, reasoning and tool output.
+**Drafting.** The dense T80 MTP drafter proposes three to four tokens per step (the promoted line runs the W5 window; the verification width adapts per step on the armed configuration). A 65,536-id draft vocabulary, rebalanced to 39.5% Han tokens for the Chinese gains above, and FP8 drafter experts make each proposal cheaper. The target verifies every drafted token with block rejection, so the drafter changes speed, not the output distribution. Unlike n-gram copy speculation, which needs a matching earlier span, the MTP head drafts from the model itself and also covers original code, reasoning and tool output.
 
-**Per-step overhead.** A low-latency SM12x GEMM, a sort-free verify-path top-k and piecewise CUDA graphs trim compute, selection and launch overhead around each target pass. The image runs vLLM's V2 model runner, where async scheduling is on by default with MTP, and adds an asynchronous short-convolution host-to-device transfer, guarded recurrent-state alignment and retained draft prefix-cache blocks.
+**Per-step overhead.** A low-latency SM12x GEMM, a sort-free verify-path top-k and piecewise CUDA graphs trim compute, selection and launch overhead around each target pass. The image runs vLLM's V2 model runner, where async scheduling is on by default with MTP (the promoted v20-fp8 line passes `--no-async-scheduling`, closing the recorded race class on that line), and adds an asynchronous short-convolution host-to-device transfer, guarded recurrent-state alignment and retained draft prefix-cache blocks.
 
 [Architecture and build provenance](docs/ARCHITECTURE.md).
 
@@ -197,7 +212,8 @@ AutoRound INT4 experts + FP8 side layers + INT8 output head
 | Path | Contents |
 |---|---|
 | [`AGENTS.md`](AGENTS.md) | Step-by-step instructions for a coding agent to set up the recipe on a GB10 over SSH, with your approval at each step |
-| [`recipe/config/v19a-w5/`](recipe/config/v19a-w5/) | **Promoted** launcher, `env` (the deterministic floor + MTP=4) and draft vocabulary ids |
+| [`recipe/config/v20-fp8/`](recipe/config/v20-fp8/) | **Promoted** fp8 launcher, `env` (the deterministic floor + the 24 GB fp8 KV pool + MTP=4), the signature-monitor registration and draft vocabulary ids |
+| [`recipe/config/v19a-w5/`](recipe/config/v19a-w5/) | The measured bf16 line of record: launcher, `env` (the deterministic floor + MTP=4, 16g pool) and draft vocabulary ids |
 | [`recipe/config/v19a-w4/`, `v16b/`](recipe/config/) | The MTP=3 reference and the upstream-stock configuration |
 | [`recipe/build/image/`](recipe/build/image/) | Staged iter6→iter7g Dockerfiles, the patch chain, hash preflight, CPU tests and the verification-gate runner |
 | [`recipe/build/model/`](recipe/build/model/) | T80 dense-MTP g32 checkpoint builder, tests and reference report |
