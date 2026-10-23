@@ -1,0 +1,69 @@
+# SPDX-License-Identifier: Apache-2.0
+# The OD-4 promoted fp8 env (DECISIONS.md D-022): the v19a-w5 promoted env
+# with KV_BYTES 24g, the R-063/R-064 validated pool form (the fp8
+# normalized capacity at native 262k is 1,291,120 tokens). The image is
+# the fp8 promotion image; serve.sh carries the fp8 dtype and the
+# --no-async-scheduling closure. The determinism floor below is unchanged
+# from the v19a promoted line.
+NAME='qwen38-flash'
+MODEL_DIR="$HOME/models/Qwen3.8-Flash-Next-W4A16-AutoRound-hybrid-mtpdense-g32"
+TABLE_DIR="$HOME/models/ple-table-fp8"
+PORT='8000'
+SERVED_NAME='qwen'
+TOOL_PARSER='qwen3_xml'
+PREFIX_CACHE='1'
+GPU_MEM='0.01'
+KV_BYTES='24g'
+SEQS='8'
+MTP='4'
+CTX='262144'
+EXTRA='--enable-prompt-tokens-details'
+LOAD_FORMAT='fastsafetensors'
+CC=''
+PREWARM='1'
+WORKERS='32'
+PLE_PREFETCH='0'
+PLE_MADV_RANDOM='1'
+PLE_FAST_ROWS='16'
+PLE_CHUNK='8'
+PLE_STATS_SEC='30'
+SPEC_EXTRA='{"rejection_sample_method":"block","draft_sample_method":"probabilistic"}'
+HIT_DEBUG='0'
+STEP_PROFILE='0'
+FP8_HYBRID='1'
+CUDA_LAUNCH_BLOCKING='0'
+FLASHINFER_AUTOTUNE='0'
+PIN_PROMPT=''
+PIN_MAX_FRACTION='0.25'
+QSA_DET='1'
+QSA_DET_LIB=''
+LOAD_CLONE='1'
+MOE_NAME_INDEX='1'
+EMBED_CHUNK='1'
+CACHE_MOUNT='$HOME/.cache/qwen38-compile'
+
+# P2 stage-1c G2 harness: the ARMED wiring drives per-step K through
+# SchedulerOutput.num_spec_tokens_to_schedule; FORCE=oscillate replaces the
+# EMA decision with a forced square wave across the candidate ladder for the
+# byte-identity probe (3<->4 at this config's MTP=4 / launch_k=4; the gate
+# harness rewrites MTP and the mode/force knobs per boot in its scratch copy).
+ADAPTIVE_WIDTH_MODE='off'
+ADAPTIVE_WIDTH_FORCE=''
+
+# D-011 moe-align stable-sort shim (D-010: the P4 byte-identity gate is
+# absolute). The proven tie-flip source is moe_align_block_size's atomicAdd
+# arrival-order scatter feeding the moe_wna16 Marlin kernel's k-slice split;
+# the shim canonicalizes each expert group's segment ascending by pair id
+# inside the captured graph (semantically identical: the per-group pair SET
+# is deterministic, only arrival order varied). Image iter7d carries the
+# shim; serve.sh passes this through as VLLM_MOE_ALIGN_STABLESORT.
+MOE_ALIGN_STABLESORT='1'
+
+# v19a promoted-candidate floor (iter7f): R-028/R-034 determinism fixes on
+# the promoted line. MOE_ALIGN_STABLESORT=1 (shim, D-011) + MARLIN_ATOMIC_
+# ADD=0 (drafter dense-marlin epilogue off, R-028/R-034) + TRITON_FORCE_
+# FIRST_CONFIG=1 (R-029 autotune boot-lottery pin). Static width candidate
+# (MTP=4 window-5 for w5 / MTP=3 for w4); ADAPTIVE off.
+MOE_ALIGN_STABLESORT='1'
+MARLIN_ATOMIC_ADD='0'
+TRITON_FORCE_FIRST_CONFIG='1'
